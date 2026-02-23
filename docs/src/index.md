@@ -1,134 +1,133 @@
-# template-python
+# Spyglass Workshop 2026
 
-## Description
+A hands-on workshop covering practical scientific computing tools and the
+[Spyglass](https://github.com/LorenFrankLab/spyglass) neuroscience data
+framework.
 
-**Welcome!** This is a template repository for Python projects using the same
-tools that are used to manage
-[Spyglass](https://github.com/LorenFrankLab/spyglass). Click
-"[Use this template](https://github.com/new?template_name=template-python&template_owner=CBroz1)"
-to create your own repository from this template, then follow the
-[quickstart](#quickstart) below.
+---
 
-## Project structure
+## Schedule
 
-```
-template-python/
-├── .github/                 # issue templates, PR template, CONTRIBUTING.md
-├── .gitignore               # ignored files and directories
-├── .pre-commit-config.yaml  # linting and formatting hooks
-├── CHANGELOG.md             # version history
-├── LICENSE                  # MIT license
-├── README.md                # this file (symlink to docs/src/index.md)
-├── docs/                    # documentation
-│   ├── mkdocs.yml           # mkdocs configuration
-│   └── src/                 # mkdocs source files
-├── environment.yml          # conda environment
-├── notebooks/               # example Jupyter notebooks
-├── pyproject.toml           # package metadata and tool config
-├── src/template_python/     # library source code
-└── tests/                   # pytest test suite
-```
+G6, Hugh Robson Building, University of Edinburgh
 
-## Quickstart
+| Time | Session |
+| ---: | :------ |
+| 01:00 – 11:30 | **Session 1**: Tools for Scientific Computing |
+| 11:30 – 12:30 | Break |
+| 12:30 – 14:00 | **Session 2**: Spyglass & DataJoint Infrastructure |
 
-### 1. Rename the template
+### Session 1: Tools for Scientific Computing (90 min)
 
-Replace the placeholder names throughout the repo with your own:
+Practical tools and workflows for scientific Python development:
+
+- Overview of GitHub: repositories, branches, forks, pull requests, and issues
+- Setting up VS Code for Python and Jupyter development
+- Working interactively with Jupyter notebooks
+- Code style and quality tools: `black`, `isort`, and `ruff`
+- Debugging your first installable Python package
+
+### Session 2: Spyglass & DataJoint Infrastructure (120 min)
+
+Introduction to relational databases and the Spyglass framework:
+
+- DataJoint infrastructure: Python–MySQL connection
+- Table tiers and declaration syntax
+- Spyglass design patterns: Parameter, Selection, Analysis, and Merge tables
+- Ingesting data into Spyglass
+- Designing a custom Spyglass pipeline
+
+---
+
+## Pre-Workshop Requirements
+
+Please complete the following **before** the workshop:
+
+1. **Create a [GitHub account](https://github.com/join)** if you do not already
+   have one.
+2. **Bring a Linux or macOS laptop.** Windows is not supported for Spyglass.
+3. **Install [VS Code](https://code.visualstudio.com/)** and
+   **[Miniconda](https://docs.anaconda.com/miniconda/)** (or
+   [Mamba](https://mamba.readthedocs.io/), recommended).
+4. **Brush up on Python basics:** functions, classes, `for` loops, `if`/`else`,
+   `try`/`except`, and shell commands (`pip install`, `conda activate`).
+
+---
+
+## Setup
+
+### 1. Fork and clone this repository
+
+1. Click **Fork** at the top-right of this page, then **Create fork**.
+2. Copy your fork URL: `https://github.com/<your-username>/SpyglassWorkshop2026`
+3. Clone it locally:
 
 ```sh
-# set your names
-repo_name="your-repo-name"
-your_name="Your Name"
-your_user="YourGitHubUsername"
-
-# rename the source package directory
-git mv "src/template_python" "src/${repo_name//-/_}"
-
-# replace placeholder strings across all files
-git grep -l "CBroz1"       | xargs sed -i "s|CBroz1|$your_user|g"
-git grep -l "Chris Broz"   | xargs sed -i "s|Chris Broz|$your_name|g"
-git grep -l "template_python" | xargs sed -i "s|template_python|${repo_name//-/_}|g"
-git grep -l "template-python" | xargs sed -i "s|template-python|$repo_name|g"
+git clone https://github.com/<your-username>/SpyglassWorkshop2026
+cd SpyglassWorkshop2026
 ```
 
 ### 2. Create the conda environment
 
-This makes an isolated environment with all the dependencies needed to run the
-code and tests.
-
 ```sh
 conda env create -f environment.yml
-conda activate $repo_name
-```
-
-Alternatively, you can update an existing environment with:
-
-```sh
-conda activate myenv
-conda env update --file environment.yml --prune
+conda activate spyglass-workshop
 ```
 
 ### 3. Install pre-commit hooks
 
-This is a one-time setup step to install tools that will run automatic checks on
-your edits before you commit them. You can customize the hooks in
-`.pre-commit-config.yaml`.
+Pre-commit runs automatic code quality checks before each `git commit`.
 
 ```sh
 pre-commit install
 ```
 
-Hooks run automatically before each commit. To run them manually:
+To run the checks manually at any time:
 
 ```sh
 pre-commit run --all-files
 ```
 
-### 4. Run tests
-
-Tests help ensure your code is working as expected when you make changes.
-Example tests in `tests/` use the [pytest](https://docs.pytest.org/) framework.
-You can run the test suite with:
+### 4. Open VS Code
 
 ```sh
-pytest
+code .
 ```
 
-If you see failed tests, you may want to rerun the test with debugging enabled:
+When VS Code opens, accept any prompts to install the recommended extensions
+listed in `.vscode/extensions.json`. Select the `spyglass-workshop` conda
+environment as your Python interpreter (`Ctrl+Shift+P` →
+`Python: Select Interpreter`).
+
+### 5. Launch Jupyter
+
+Notebooks are in the `notebooks/` directory. Open them in VS Code directly,
+or start Jupyter Lab from the terminal:
 
 ```sh
-pytest --pdb -v tests/test_your_module.py -k test_your_function
+jupyter lab
 ```
 
-### 5. Build and serve docs locally
+---
 
-[`mkdocs`](https://www.mkdocs.org/getting-started/) is a static website
-generator for documentation that can be automatically deployed as a
-[GitHub Page](https://www.mkdocs.org/user-guide/deploying-your-docs/).
+## Repository Structure
 
-```sh
-# serve with live reload
-mkdocs serve -f docs/mkdocs.yml
-
-# build static site
-mkdocs build -f docs/mkdocs.yml
+```
+SpyglassWorkshop2026/
+├── .vscode/                 # Recommended VS Code settings and extensions
+├── docs/src/                # Workshop slides and documentation (mkdocs)
+├── notebooks/               # Interactive Jupyter notebooks
+├── src/spyglass_workshop/   # Python package (attendees will add code here)
+└── tests/                   # Pytest test suite
 ```
 
-You can customize the documentation by editing the markdown files in `docs/src/`
-and the configuration in `docs/mkdocs.yml`. Various extensions can even
-automatically generate API reference documentation from your source code (e.g.,
-[`mkdocs-gen-files`](https://github.com/oprypin/mkdocs-gen-files)) or auto-run
-your notebooks to show as web pages (e.g.,
-[`mkdocs-jupyter`](https://github.com/danielfrg/mkdocs-jupyter)).
+---
 
 ## Resources
 
-- [conda](https://docs.conda.io/) — environment and package management
-- [pre-commit](https://pre-commit.com/) — Git hook framework for code quality
-- [pytest](https://docs.pytest.org/) — Python testing framework
-- [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) —
-  documentation site generator
-- GitHub docs:
-  [forking a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo),
-  [branching](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches),
-  [opening a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)
+- [Spyglass documentation](https://lorenfranklab.github.io/spyglass/)
+- [DataJoint documentation](https://datajoint.com/docs/)
+- [VS Code Python docs](https://code.visualstudio.com/docs/languages/python)
+- [conda cheatsheet](https://docs.conda.io/projects/conda/en/latest/user-guide/cheatsheet.html)
+- GitHub: [forking](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
+  · [branches](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches)
+  · [pull requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)

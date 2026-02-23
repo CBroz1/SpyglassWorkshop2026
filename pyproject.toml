@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 requires = [ "hatchling>=1.26.3,<2" ]
 
 [project]
-name = "template-python"
+name = "spyglass-workshop"
 description = "Your project description here."
 readme = "docs/src/index.md"
 license = "MIT"
@@ -22,17 +22,17 @@ classifiers = [
 dynamic = [ "version" ]
 
 dependencies = [  ]
-urls.Homepage = "https://github.com/CBroz1/template-python"
-urls.Repository = "https://github.com/CBroz1/template-python"
+urls.Homepage = "https://github.com/CBroz1/spyglass-workshop"
+urls.Repository = "https://github.com/CBroz1/spyglass-workshop"
 
 [tool.hatch.build.targets.sdist]
 include = [ "src", "tests" ]
 
 [tool.hatch.build.targets.wheel]
-packages = [ "src/template_python" ]
+packages = [ "src/spyglass_workshop" ]
 
 [tool.hatch.version]
-path = "src/template_python/__init__.py"
+path = "src/spyglass_workshop/__init__.py"
 
 [tool.ruff]
 src = [ "src", "tests" ]
@@ -53,8 +53,8 @@ show_missing = true
 
 [tool.coverage.run]
 command_line = "-m pytest"
-source_pkgs = [ "template_python", "tests" ]
+source_pkgs = [ "spyglass_workshop", "tests" ]
 
 [tool.coverage.paths]
-template_python = [ "src/template_python" ]
+spyglass_workshop = [ "src/spyglass_workshop" ]
 tests = [ "tests" ]

@@ -1,7 +1,7 @@
 import packaging.version
 
-import template_python
+import spyglass_workshop
 
 
 def test_version_is_valid() -> None:
-    _ = packaging.version.parse(template_python.__version__)
+    _ = packaging.version.parse(spyglass_workshop.__version__)

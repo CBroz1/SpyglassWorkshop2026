@@ -3,6 +3,11 @@
 temp*
 *.log
 
+## Workshop database
+database/.env
+database/data/
+database/init/02_data.sql
+
 ## macOS
 ##
 ## https://github.com/github/gitignore/blob/main/Global/macOS.gitignore

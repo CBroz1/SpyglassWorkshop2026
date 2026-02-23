@@ -1,4 +1,4 @@
-name: template-python
+name: spyglass-workshop
 channels:
   - conda-forge
 dependencies:
@@ -9,6 +9,8 @@ dependencies:
       - -e .
       # checks
       - ruff>=0.15,<0.16
+      # notebooks
+      - jupytext
       # docs
       - mkdocs-material>=9,<10
       # tests
