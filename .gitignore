@@ -2,11 +2,12 @@
 # Add file name patterns that you want git to ignore in this file. For example:
 temp*
 *.log
+dj_local_conf.json
+.claude/*
 
 ## Workshop database
 database/.env
 database/data/
-database/init/02_data.sql
 
 ## macOS
 ##

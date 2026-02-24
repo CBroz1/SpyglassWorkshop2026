@@ -20,20 +20,15 @@ classifiers = [
   "Typing :: Typed",
 ]
 dynamic = [ "version" ]
-
-dependencies = []
-
-[project.optional-dependencies]
-# Install with: pip install -e ".[workshop]"
-# Adds tools used in exercises that are not part of the core Spyglass install.
-workshop = [
-    "jupytext",
-    "pre-commit",
-    "pytest>=8.1.1,<9",
-    "ruff>=0.15,<0.16",
+dependencies = [
+  "jupytext",         # convert notebooks to python scripts
+  "pre-commit",       # check files before
+  "pytest>=8.1.1,<9", # testing framework
+  "ruff>=0.15,<0.16", # linter and formatter
+  "spyglass-neuro",   # ensure spyglass is installed
 ]
-urls.Homepage = "https://github.com/CBroz1/spyglass-workshop"
-urls.Repository = "https://github.com/CBroz1/spyglass-workshop"
+urls.Homepage = "https://github.com/CBroz1/SpyglassWorkshop2026"
+urls.Repository = "https://github.com/CBroz1/SpyglassWorkshop2026"
 
 [tool.hatch.build.targets.sdist]
 include = [ "src", "tests" ]

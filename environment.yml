@@ -1,7 +1,7 @@
 # Standalone fallback environment — creates a self-contained spyglass+workshop env.
 #
 # PRIMARY INSTALL PATH (recommended):
-#   Use the Spyglass installer, then pip install -e ".[workshop]" into it.
+#   Use the Spyglass installer, then `pip install -e .` this repo.
 #   See README.md → Pre-Workshop Requirements.
 #
 # FALLBACK (if the installer is unavailable):
@@ -19,7 +19,4 @@ dependencies:
   - python>=3.10,<3.13
   - pip
   - pip:
-      # Spyglass from GitHub main
-      - git+https://github.com/LorenFrankLab/spyglass
-      # This workshop package with all workshop-specific tools
-      - -e ".[workshop]"
+      - -e . # this package

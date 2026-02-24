@@ -502,7 +502,7 @@ assert result == 1, f"f(1) should be 1, got {result}"
 # ```
 
 # ---
-# ## ruff
+# ## `ruff`
 #
 # In this section you will run `ruff` on a script with many linting issues
 # and see how many problems it catches automatically.
