@@ -31,6 +31,7 @@ GRANT ALL PRIVILEGES ON `ripple\_%`.* TO 'dj_user';
 GRANT ALL PRIVILEGES ON `lfp\_%`.* TO 'dj_user';
 GRANT ALL PRIVILEGES ON `waveform\_%`.* TO 'dj_user';
 GRANT ALL PRIVILEGES ON `mua\_%`.* TO 'dj_user';
+GRANT ALL PRIVILEGES ON `workshop\_%`.* TO 'dj_user';
 
 CREATE ROLE IF NOT EXISTS 'dj_guest';
 GRANT SELECT ON `%`.* TO 'dj_guest';

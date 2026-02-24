@@ -1,20 +1,25 @@
-name: spyglass-workshop
+# Standalone fallback environment — creates a self-contained spyglass+workshop env.
+#
+# PRIMARY INSTALL PATH (recommended):
+#   Use the Spyglass installer, then pip install -e ".[workshop]" into it.
+#   See README.md → Pre-Workshop Requirements.
+#
+# FALLBACK (if the installer is unavailable):
+#   mamba env create -f environment.yml
+#   conda activate spyglass
+#   pre-commit install
+
+name: spyglass
 channels:
   - conda-forge
+  - franklab
+  - edeno
 dependencies:
-  - python>=3.10,<3.14
+  # Must match Spyglass's python constraint (see spyglass pyproject.toml).
+  - python>=3.10,<3.13
   - pip
   - pip:
-      # package (editable install)
-      - -e .
+      # Spyglass from GitHub main
       - git+https://github.com/LorenFrankLab/spyglass
-      # checks
-      - ruff>=0.15,<0.16
-      # notebooks
-      - jupytext
-      # docs
-      - mkdocs-material>=9,<10
-      # tests
-      - coverage[toml]>=7,<8
-      - packaging>=21,<25
-      - pytest>=8.1.1,<9
+      # This workshop package with all workshop-specific tools
+      - -e ".[workshop]"

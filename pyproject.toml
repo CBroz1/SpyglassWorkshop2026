@@ -21,7 +21,17 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 
-dependencies = [  ]
+dependencies = []
+
+[project.optional-dependencies]
+# Install with: pip install -e ".[workshop]"
+# Adds tools used in exercises that are not part of the core Spyglass install.
+workshop = [
+    "jupytext",
+    "pre-commit",
+    "pytest>=8.1.1,<9",
+    "ruff>=0.15,<0.16",
+]
 urls.Homepage = "https://github.com/CBroz1/spyglass-workshop"
 urls.Repository = "https://github.com/CBroz1/spyglass-workshop"
 

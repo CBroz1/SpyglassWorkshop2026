@@ -194,6 +194,56 @@ Spyglass will read NWB files from the mount exactly as if they were local.
 
 ---
 
+## Codespaces Fallback
+
+If the LAN MySQL instance is unavailable, a GitHub Codespace can serve as a
+drop-in replacement with the same credentials and schema configuration.
+
+### Option A — Attendee runs their own Codespace (self-contained)
+
+Each attendee opens the repo in a Codespace (browser or VS Code), and points
+their DataJoint config at `localhost` instead of the instructor's IP.
+
+1. Open the repository in a Codespace:
+
+   ```
+   https://codespaces.new/<org>/<repo>
+   ```
+
+2. The `postCreateCommand` runs automatically and creates the workshop users.
+
+3. In the attendee's notebook, set the host to `localhost` (or `127.0.0.1`):
+
+   ```python
+   dj.config["database.host"] = "127.0.0.1"
+   dj.config["database.user"] = "sailor"
+   dj.config["database.password"] = "galley"
+   ```
+
+### Option B — Instructor exposes the Codespace database over TCP
+
+The instructor starts a Codespace and forwards port 3306 to their local
+machine using the GitHub CLI, then shares their LAN IP as usual.
+
+```bash
+# Instructor machine — requires gh CLI authenticated
+gh cs ports forward 3306:3306 --codespace <codespace-name>
+```
+
+While this command runs, attendees connect to the instructor's LAN IP on port
+3306 exactly as if the Docker container were running locally.
+
+### Credentials (identical to the LAN instance)
+
+```
+Host     : localhost  (Option A) or instructor LAN IP (Option B)
+Port     : 3306
+User     : sailor
+Password : galley
+```
+
+---
+
 ## Teardown
 
 At the end of the workshop, stop all services and remove resources:

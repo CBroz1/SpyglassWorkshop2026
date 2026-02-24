@@ -40,85 +40,86 @@ Introduction to relational databases and the Spyglass framework:
 
 ## Pre-Workshop Requirements
 
-Please complete the following **before** the workshop:
+Please complete **all** of the following **before arriving**. Steps 3–4
+require a reliable internet connection and take **15–45 minutes** on a cold
+cache. Do not rely on the workshop venue wifi for the install.
 
-1. **Create a [GitHub account](https://github.com/join)** if you do not already
-   have one.
+1. **Create a [GitHub account](https://github.com/join)** if you do not
+   already have one.
+
 2. **Bring a Linux or macOS laptop.** Spyglass may have issues on Windows;
    Windows users are welcome to attend and report any problems they encounter.
+
 3. **Install [VS Code](https://code.visualstudio.com/)** and
    **[Miniconda](https://docs.anaconda.com/miniconda/)** (or
    [Mamba](https://mamba.readthedocs.io/), recommended).
-4. **Brush up on Python basics:** functions, classes, `for` loops, `if`/`else`,
-   `try`/`except`, and shell commands (`pip install`, `conda activate`).
-5. **Database credentials** will be distributed on the day. You do not need to
-   configure anything in advance — Session 2 will walk through the setup.
+
+4. **Install Spyglass** using its cross-platform installer:
+
+   ```sh
+   git clone https://github.com/LorenFrankLab/spyglass
+   cd spyglass
+   python scripts/install.py --minimal
+   ```
+
+   This creates a `spyglass` conda environment containing Spyglass and its
+   core dependencies. Choose **minimal** when prompted — the full install is
+   not required for this workshop.
+
+   Skip the database setup step — credentials will be provided on the day.
+
+5. **Verify the install:**
+
+   ```sh
+   conda activate spyglass
+   python -c "import spyglass; print('OK')"
+   ```
+
+   You should see `OK`. If you see an `ImportError`, re-run the installer
+   or ask for help before the workshop day.
+
+6. **Brush up on Python basics:** functions, classes, `for` loops,
+   `if`/`else`, `try`/`except`, and shell commands (`pip install`,
+   `conda activate`).
+
+7. **Database credentials** will be distributed on the day. You do not
+   need to configure anything in advance — Session 2 will walk through
+   the setup.
 
 ---
 
-## Setup
+## On the Day
 
 ### 1. Fork and clone this repository
 
-1. Click **Fork** at the top-right of this page, then **Create fork**.
-2. Copy your fork URL: `https://github.com/<your-username>/SpyglassWorkshop2026`
-3. Clone it locally:
+Click **Fork** at the top-right of this page → **Create fork**, then:
 
 ```sh
 git clone https://github.com/<your-username>/SpyglassWorkshop2026
 cd SpyglassWorkshop2026
 ```
 
-### 2. Create the conda environment
+### 2. Add the workshop to your Spyglass environment
 
 ```sh
-conda env create -f environment.yml
-conda activate spyglass-workshop
-```
-
-### 3. Install the workshop package
-
-```sh
-pip install -e .
-```
-
-This makes `spyglass_workshop` importable from any notebook or script
-in the repository. The `-e` flag means changes you make to the source
-are reflected immediately without reinstalling.
-
-### 4. Install pre-commit hooks
-
-Pre-commit runs automatic code quality checks before each `git commit`.
-
-```sh
+conda activate spyglass
+pip install -e ".[workshop]"
 pre-commit install
 ```
 
-To run the checks manually at any time:
+This installs the workshop package and its tools (`ruff`, `pytest`,
+`pre-commit`, `jupytext`) into the `spyglass` environment you set up
+before the workshop.
 
-```sh
-pre-commit run --all-files
-```
-
-### 5. Open VS Code
+### 3. Open VS Code
 
 ```sh
 code .
 ```
 
 When VS Code opens, accept any prompts to install the recommended extensions
-listed in `.vscode/extensions.json`. Select the `spyglass-workshop` conda
-environment as your Python interpreter (`Ctrl+Shift+P` →
-`Python: Select Interpreter`).
-
-### 6. Launch Jupyter
-
-Notebooks are in the `notebooks/` directory. Open them in VS Code directly,
-or start Jupyter Lab from the terminal:
-
-```sh
-jupyter lab
-```
+listed in `.vscode/extensions.json`. Select the `spyglass` conda environment
+as your Python interpreter (`Ctrl+Shift+P` → `Python: Select Interpreter`).
 
 ---
 

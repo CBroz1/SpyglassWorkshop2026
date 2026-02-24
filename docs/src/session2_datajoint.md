@@ -1,14 +1,3 @@
-<!--
-PRESENTER NOTE
-==============
-This file is a lookatme slide deck. Run it with:
-    pip install lookatme
-    lookatme docs/src/session2_datajoint.md --live
-
-The calibration slide below is for presenter setup only.
-`<!-- stop -->` markers pause the presentation mid-slide.
-Neither is visible in the rendered presentation itself.
--->
 ---
 title: "Session 2: Spyglass & DataJoint Infrastructure"
 author: Chris Broz
@@ -271,6 +260,31 @@ Good data provenance requires **good version control** to keep these in sync.
 
 ---
 
+# Infrastructure
+
+## Explore Existing Spyglass Tables
+
+Spyglass pre-populates a shared `common` schema for every dataset.
+
+Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 1**.
+
+```python
+from spyglass.common import Subject, Session
+
+# Show the table definition
+Subject.describe()
+
+# Fetch all subjects
+subjects = Subject.fetch(as_dict=True)
+print(f"{len(subjects)} subjects in the database")
+
+# Restrict: & filters; join: * combines tables
+mice = Subject & {"species": "Mus musculus"}
+subj_sessions = Subject * Session
+```
+
+---
+
 # Overview
 
 - ✅ DataJoint Infrastructure
@@ -499,6 +513,31 @@ class SubjBlinded(SpyglassMixin, dj.Manual):
 
 ---
 
+# Python Structure
+
+## Declare Your Own Schema
+
+Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 2**.
+
+`schema_template.py` implements the patterns from this section.
+Importing it registers your personal schema in the database:
+
+```python
+import spyglass_workshop.schema_template as st
+
+# Visualise the dependency graph
+dj.Diagram(st.schema).draw()
+
+# Inspect each table's definition
+for table_cls in [st.MyParams, st.MyAnalysisSelection, st.MyAnalysis]:
+    table_cls.describe()
+
+# Populate the Lookup table with default parameter sets
+st.MyParams.insert_default()
+```
+
+---
+
 # Overview
 
 - ✅ DataJoint Infrastructure
@@ -662,6 +701,30 @@ class MyAnalysis(SpyglassMixin, dj.Computed):
 
 # Custom Pipelines
 
+## Run the Pipeline
+
+Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 3**.
+
+```python
+# Pair subjects with the 'default' parameter set
+subject_keys = Subject.fetch("KEY", limit=2)
+st.MyAnalysisSelection.insert(
+    [{**k, "param_name": "default"} for k in subject_keys],
+    skip_duplicates=True,
+)
+
+# Process every pending Selection row
+st.MyAnalysis.populate(display_progress=True)
+
+# Inspect results and the nested Part table
+st.MyAnalysis()
+st.MyAnalysis.MyPart()
+```
+
+---
+
+# Custom Pipelines
+
 ## Foreign Key References
 
 Primary vs Secondary and Foreign Key vs Field are orthogonal concepts:
@@ -757,6 +820,21 @@ class MyAnalysis(SpyglassMixin, dj.Computed):
 
 See [Merge table docs](https://lorenfranklab.github.io/spyglass/latest/api/utils/dj_merge_tables/)
 for the full `merge_*` method reference.
+
+---
+
+# Custom Pipelines
+
+## Extend the Pipeline
+
+Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 4**.
+
+Add `mean_result : float` to `MyAnalysis`:
+
+1. Edit `schema_template.py` — add the field and compute it in `make`
+2. Restart the kernel — DataJoint re-reads the definition on import
+3. Delete old rows — `st.MyAnalysis.delete(safemode=False)`
+4. Re-run `populate()` and verify the new field is present
 
 ---
 

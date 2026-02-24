@@ -1,0 +1,42 @@
+{
+  // Spyglass Workshop — MySQL fallback via GitHub Codespaces.
+  //
+  // Primary use-cases:
+  //   1. Attendee fallback: open this repo in a Codespace, then connect
+  //      notebooks to localhost (port 3306) instead of the instructor's LAN IP.
+  //   2. Instructor fallback: run the Codespace, then expose port 3306 to the
+  //      room via:
+  //        gh cs ports forward 3306:3306 --codespace <name>
+  //      Attendees then connect to the instructor's machine as normal.
+  //
+  // Credentials (same as the LAN instance):
+  //   User: sailor   Password: galley    (attendee)
+  //   User: captain  Password: brigde    (admin)
+  //   User: swab     Password: bilge     (read-only)
+  //   Root password: tutorial
+
+  "name": "Spyglass Workshop DB",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    // Installs MySQL 8.0 and starts the service automatically.
+    "ghcr.io/devcontainers/features/mysql:1": {
+      "version": "8.0",
+      "rootPassword": "tutorial"
+    }
+  },
+
+  // Apply workshop MySQL config and create roles/users.
+  "postCreateCommand": "bash .devcontainer/setup-db.sh",
+
+  "forwardPorts": [3306],
+  "portsAttributes": {
+    "3306": {
+      "label": "MySQL Workshop DB",
+      // Silent: instructors forward manually; attendees connect inside the Codespace.
+      "onAutoForward": "silent"
+    }
+  },
+
+  "remoteUser": "vscode"
+}

@@ -3,16 +3,15 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.0
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.17.0
 #   kernelspec:
-#     display_name: spyglass-workshop
+#     display_name: spyglass
 #     language: python
-#     name: python3
+#     name: spyglass
 # ---
 
-# %% [markdown]
 # # Session 2: Spyglass & DataJoint Infrastructure
 #
 # This notebook walks through the concepts covered in the Session 2 slides.
@@ -21,11 +20,12 @@
 # **Prerequisites**
 #
 # - The workshop MySQL instance is running and you have received credentials.
-# - Your conda environment is active: `conda activate spyglass-workshop`.
-# - You have installed the workshop package: `pip install -e .` (from the repo root).
+# - Your Spyglass environment is active: `conda activate spyglass`.
+# - The workshop package is installed: `pip install -e ".[workshop]"` (run once,
+#   from the repo root, as shown in the "On the Day" setup steps).
 # - Spyglass is installed — confirmed by the check cell immediately below.
 
-# %%
+# +
 # Verify that required packages are importable before proceeding.
 # If either check fails, follow the fix instructions in the printed message.
 
@@ -38,12 +38,16 @@ except ImportError:
 try:
     import spyglass  # noqa: F401
 except ImportError:
-    missing.append("spyglass   →  run:  pip install spyglass-neuro")
+    missing.append(
+        "spyglass   →  run the Spyglass installer (see README Pre-Workshop Requirements)"
+    )
 
 try:
     import spyglass_workshop  # noqa: F401
 except ImportError:
-    missing.append("spyglass_workshop  →  run from the repo root:  pip install -e .")
+    missing.append(
+        'spyglass_workshop  →  from the repo root: pip install -e ".[workshop]"'
+    )
 
 if missing:
     print("Missing packages — install them and restart the kernel:\n")
@@ -51,10 +55,10 @@ if missing:
         print(" ", msg)
 else:
     print("All required packages found. Ready to proceed.")
+# -
 
-# %% [markdown]
 # ---
-# ## Section 0: Connect to the Workshop Database
+# ## The Config File
 #
 # DataJoint reads connection settings from `~/.datajoint_config.json`.
 # The cell below writes that file using the workshop credentials.
@@ -62,7 +66,7 @@ else:
 # > **Note:** Replace `HOST` with the IP address given to you by the
 # > instructor. The password for user `sailor` is `galley`.
 
-# %%
+# +
 import json
 from pathlib import Path
 
@@ -83,7 +87,7 @@ config_path = Path.home() / ".datajoint_config.json"
 config_path.write_text(json.dumps(config, indent=2))
 print(f"Config written to {config_path}")
 
-# %%
+# +
 import datajoint as dj
 
 dj.config.load(str(Path.home() / ".datajoint_config.json"))
@@ -91,8 +95,8 @@ dj.config.load(str(Path.home() / ".datajoint_config.json"))
 conn = dj.conn()
 conn.ping()
 print("Connected to", dj.config["database.host"])
+# -
 
-# %% [markdown]
 # **If `conn.ping()` raises an error**, work through this checklist:
 #
 # | Symptom | Likely cause | Fix |
@@ -104,27 +108,25 @@ print("Connected to", dj.config["database.host"])
 #
 # Once the fix is applied, re-run the two cells above (config write and connect).
 
-# %% [markdown]
 # ---
-# ## Section 1: Explore Existing Spyglass Tables
+# ## Explore Existing Spyglass Tables
 #
 # Spyglass tables are already declared in the workshop database.
 # Let's explore the `common` schema — the shared backbone of every pipeline.
 
-# %%
 # List all schemas your user can see
 schemas = dj.list_schemas()
 print("Available schemas:")
 for s in sorted(schemas):
     print(" ", s)
 
-# %%
+# +
 from spyglass.common import Subject, Session, Nwbfile
 
 # Show the table definition
 Subject.describe()
+# -
 
-# %%
 # Fetch all subjects as a list of dicts.
 # as_dict=True  →  returns a list of plain Python dicts; easy to inspect
 # fetch("KEY")  →  returns only the primary-key fields, as a numpy recarray;
@@ -133,7 +135,6 @@ subjects = Subject.fetch(as_dict=True)
 print(f"{len(subjects)} subjects in the database")
 subjects[:3]
 
-# %%
 # Draw the dependency graph for a subset of the common schema.
 # dj.Diagram supports operator overloading:
 #   diagram + N  adds N levels downstream  (tables that depend on this one)
@@ -145,12 +146,11 @@ subjects[:3]
     + 1  # show one level downstream from Session
 ).draw()
 
-# %% [markdown]
 # ### Restricting and joining tables
 #
 # DataJoint uses `&` to restrict (filter) and `*` to join tables.
 
-# %%
+# +
 # Restrict: fetch subjects whose species is 'Mus musculus'
 mice = Subject & {"species": "Mus musculus"}
 print(f"{len(mice)} mice")
@@ -158,8 +158,8 @@ print(f"{len(mice)} mice")
 # String-based restriction (SQL WHERE clause syntax)
 recent = Session & "session_start_time > '2024-01-01'"
 print(f"{len(recent)} sessions since 2024")
+# -
 
-# %%
 # Join: combine Subject and Session
 subj_sessions = Subject * Session
 # Fetch just the columns we care about
@@ -167,7 +167,6 @@ subj_sessions.fetch(
     "subject_id", "session_id", "session_start_time", as_dict=True, limit=5
 )
 
-# %% [markdown]
 # ### Exercise 1.1 — Query the database
 #
 # Using the patterns above, answer the following:
@@ -175,30 +174,30 @@ subj_sessions.fetch(
 # 1. How many sessions are associated with subjects of species `'Rattus norvegicus'`?
 # 2. Fetch the `subject_id` and `session_start_time` for the five most recent sessions.
 
-# %%
+# +
 # YOUR CODE HERE
 
 # 1. Sessions for Rattus norvegicus
 
 # 2. Five most recent sessions (hint: use order_by='session_start_time DESC')
 #    and fetch('subject_id', 'session_start_time', ...)
+# -
 
-# %% [markdown]
 # ---
-# ## Section 2: Declare Your Own Schema
+# ## Declare Your Own Schema
 #
 # `schema_template.py` defines a minimal Parameter → Selection → Analysis
 # pipeline. Importing it registers all tables under your personal schema
 # prefix (`<your-username>_workshop`).
 
-# %%
+# +
 import spyglass_workshop.schema_template as st
 from spyglass_workshop.utils import SCHEMA_PREFIX
 
 print(f"Your schema prefix: {SCHEMA_PREFIX}")
 print(f"Tables live in:     {SCHEMA_PREFIX}_workshop")
+# -
 
-# %%
 # Draw the full dependency graph for your schema.
 # - 1 adds one level upstream so the Subject table is shown as context.
 (
@@ -207,7 +206,6 @@ print(f"Tables live in:     {SCHEMA_PREFIX}_workshop")
     - 1  # show one level upstream (Subject and its parents)
 ).draw()
 
-# %%
 # Inspect each table's definition
 for table_cls in [st.MyParams, st.MyAnalysisSelection, st.MyAnalysis]:
     print(f"{'=' * 60}")
@@ -215,19 +213,17 @@ for table_cls in [st.MyParams, st.MyAnalysisSelection, st.MyAnalysis]:
     table_cls.describe()
     print()
 
-# %%
 # Insert the default parameter sets
 st.MyParams.insert_default()
 st.MyParams()
 
-# %% [markdown]
 # ---
-# ## Section 3: Run the Pipeline
+# ## Run the Pipeline
 #
 # Now we will populate the Selection table and trigger `populate()` on the
 # Analysis table.
 
-# %%
+# +
 # Pair the first two subjects with the 'default' parameter set
 subject_keys = Subject.fetch("KEY", limit=2)
 
@@ -236,13 +232,13 @@ st.MyAnalysisSelection.insert(
     skip_duplicates=True,
 )
 st.MyAnalysisSelection()
+# -
 
-# %%
 # Run the analysis for all pending Selection rows.
 # display_progress=True shows a progress bar.
 st.MyAnalysis.populate(display_progress=True)
 
-# %%
+# +
 # Inspect the Analysis results
 print("MyAnalysis rows:")
 print(st.MyAnalysis())
@@ -251,20 +247,19 @@ print(st.MyAnalysis())
 # Access them as an attribute: MasterTable.PartTable()
 print("\nMyPart rows (first 10):")
 print(st.MyAnalysis.MyPart().fetch(limit=10, as_dict=True))
+# -
 
-# %%
 # Use the built-in helper to summarise one result
 first_key = st.MyAnalysis.fetch("KEY", limit=1)[0]
 st.MyAnalysis.summarise(first_key)
 
-# %% [markdown]
 # ### Exercise 3.1 — Run with a different parameter set
 #
 # Insert a new set of Selection rows using the `'quick'` parameter set and
 # re-run `populate()`. Then compare the `total_result` values between the
 # two parameter sets.
 
-# %%
+# +
 # YOUR CODE HERE
 
 # 1. Insert Selection rows with param_name='quick'
@@ -272,10 +267,10 @@ st.MyAnalysis.summarise(first_key)
 # 2. Call populate()
 
 # 3. Fetch total_result for both param sets and compare
+# -
 
-# %% [markdown]
 # ---
-# ## Section 4: Extend the Pipeline (Guided Exercise)
+# ## Extend the Pipeline
 #
 # Your task is to add a `mean_result : float` secondary field to `MyAnalysis`
 # that stores the mean of all part results for that key.
@@ -298,7 +293,7 @@ st.MyAnalysis.summarise(first_key)
 # > definition. Rows computed before you added `mean_result` lack that field,
 # > so `populate()` would fail until the old rows are removed.
 
-# %%
+# +
 # STEP 6: After restarting the kernel and editing schema_template.py,
 # uncomment the line below and run this cell to drop the old Analysis rows.
 # This must happen before populate() can insert rows with the new field.
@@ -306,7 +301,7 @@ st.MyAnalysis.summarise(first_key)
 # import spyglass_workshop.schema_template as st
 # st.MyAnalysis.delete(safemode=False)
 
-# %%
+# +
 # YOUR CODE HERE
 # After editing the schema and restarting the kernel:
 
@@ -315,14 +310,14 @@ st.MyAnalysis.summarise(first_key)
 # st.MyAnalysisSelection.insert_all()   # or re-insert manually
 # st.MyAnalysis.populate(display_progress=True)
 # st.MyAnalysis()
+# -
 
-# %% [markdown]
 # ### Verify
 #
 # Run the cell below to check that `mean_result` is now present and
 # consistent with the part table values.
 
-# %%
+# +
 import numpy as np
 
 for key in st.MyAnalysis.fetch("KEY"):
@@ -331,8 +326,8 @@ for key in st.MyAnalysis.fetch("KEY"):
     computed_mean = float(np.mean(part_results))
     match = "✓" if abs(stored_mean - computed_mean) < 1e-6 else "✗"
     print(f"{key}  stored={stored_mean:.2f}  computed={computed_mean:.2f}  {match}")
+# -
 
-# %% [markdown]
 # ---
 # ## Summary
 #

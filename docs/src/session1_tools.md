@@ -1,14 +1,3 @@
-<!--
-PRESENTER NOTE
-==============
-This file is a lookatme slide deck. Run it with:
-    pip install lookatme
-    lookatme docs/src/session1_tools.md --live
-
-The calibration slide below is for presenter setup only.
-`<!-- stop -->` markers pause the presentation mid-slide.
-Neither is visible in the rendered presentation itself.
--->
 ---
 title: "Session 1: Tools for Scientific Computing"
 author: Chris Broz
@@ -17,11 +6,10 @@ styles:
     style: dracula
 ---
 
-<!-- PRESENTER: resize your terminal to match the calibration slide below -->
 # Calibration Slide
 
 ```
-Window must be this wide ─────────────────────────────────────────────────────►
+Window must be this wide ─────────────────────────────────────────────────►
 
 And this tall
 │
@@ -523,6 +511,29 @@ Consistent style removes cognitive overhead:
 
 # Code Quality
 
+## Atomizing
+
+Working memory is limited — long functions force you to hold too much
+in mind at once.  Extract pieces into the smallest chunk that deserves
+a name:
+
+| Level | Mechanism |
+| :---- | :-------- |
+| Conceptual group | Blank line (paragraph break) |
+| Conditional value | Ternary or early assignment |
+| Reusable step | Method on a class |
+| Shared within a module | Helper function |
+| Shared across a project | Utility module |
+
+<!-- stop -->
+
+A well-named helper turns code you have to *read* into a word you
+already *know*.
+
+---
+
+# Code Quality
+
 ## `ruff`
 
 `ruff` is a fast Python linter and formatter — it replaces
@@ -572,6 +583,44 @@ from spyglass_workshop.examples.fibonacci import f
 
 Why does order matter? It makes the dependency graph of a file
 immediately readable at the top.
+
+---
+
+# Code Quality
+
+## Type hints & docstrings
+
+Type hints are not enforced at runtime but document intent so editors
+and readers don't have to guess:
+
+```python
+def get_data_interface(
+    nwbfile: pynwb.NWBFile,
+    name: str,
+    interface_class: type | None = None,
+) -> NWBDataInterface | None:
+```
+
+<!-- stop -->
+
+Docstrings power `help()` and auto-generated docs.  Spyglass uses
+**NumPy style**:
+
+```python
+    """One-line description.
+
+    Parameters
+    ----------
+    nwbfile : pynwb.NWBFile
+        The NWB file to search.
+    name : str
+        Name of the data interface.
+
+    Returns
+    -------
+    NWBDataInterface or None
+    """
+```
 
 ---
 
@@ -735,12 +784,3 @@ Key takeaways:
 <!-- stop -->
 
 After the break: **Session 2 — Spyglass & DataJoint Infrastructure**
-
----
-
-<!--
-PRESENTER NOTE
-To present these slides:
-    pip install lookatme
-    lookatme docs/src/session1_tools.md --live
--->
