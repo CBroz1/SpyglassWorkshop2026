@@ -1,3 +1,14 @@
+<!--
+PRESENTER NOTE
+==============
+This file is a lookatme slide deck. Run it with:
+    pip install lookatme
+    lookatme docs/src/session2_datajoint.md --live
+
+The calibration slide below is for presenter setup only.
+`<!-- stop -->` markers pause the presentation mid-slide.
+Neither is visible in the rendered presentation itself.
+-->
 ---
 title: "Session 2: Spyglass & DataJoint Infrastructure"
 author: Chris Broz
@@ -6,6 +17,7 @@ styles:
     style: dracula
 ---
 
+<!-- PRESENTER: resize your terminal to match the calibration slide below -->
 # Calibration Slide
 
 ```
@@ -118,7 +130,8 @@ This session will cover ...
 
 When you import a DataJoint table, it ...
 
-1. Connects to the MySQL server using credentials from `dj_local_conf.json`
+1. Connects to the MySQL server using credentials from a local config file
+   (we will create this in the notebook — Section 0)
 2. Checks whether that table exists in the database
 3. If not, declares it using the Python `definition`
 
@@ -129,6 +142,39 @@ At its core, DataJoint maps Python ↔ SQL:
 - Python class definitions → SQL `CREATE TABLE` statements
 - Python `insert` / `fetch` calls → SQL `INSERT` / `SELECT` queries
 - Python `populate` calls → SQL transactions triggered by upstream changes
+
+---
+
+# Infrastructure
+
+## The Config File
+
+The minimal fields needed to connect to the workshop database:
+
+```json
+{
+    "database.host":     "INSTRUCTOR_IP",
+    "database.user":     "sailor",
+    "database.password": "galley",
+    "database.port":     3306,
+    "database.use_tls":  false,
+    "safemode":          true,
+    "fetch_format":      "array"
+}
+```
+
+<!-- stop -->
+
+In the notebook we write this file programmatically, then load it with:
+
+```python
+import datajoint as dj
+dj.config.load("path/to/dj_local_conf.json")
+dj.conn().ping()   # raises an error if the connection fails
+```
+
+> The full Spyglass config also declares `stores` paths for NWB files.
+> For this workshop, only the `database.*` fields are needed.
 
 ---
 
@@ -330,6 +376,11 @@ The parentheses list the **base classes** this table inherits from:
 
 `@schema` is a *decorator* that registers the class with the database and
 creates the SQL table on first import if it doesn't exist.
+
+> **What is a decorator?** The `@name` syntax above a class (or function)
+> wraps it to add behaviour. Here, `@schema` is shorthand for
+> `ExampleTable = schema(ExampleTable)` — it hands the class to DataJoint,
+> which maps it to a SQL table and stores the mapping.
 
 ---
 
@@ -721,12 +772,12 @@ for the full `merge_*` method reference.
 
 # Common Errors
 
-1. How to enter debug mode
-2. `IntegrityError`
-3. `OperationalError` / Permission denied
-4. `TypeError`
-5. `KeyError`
-6. `DataJointError`
+- Debug mode
+- `IntegrityError`
+- `OperationalError` / Permission denied
+- `TypeError`
+- `KeyError`
+- `DataJointError`
 
 ---
 
@@ -747,7 +798,7 @@ An error traceback has multiple *frames*. To inspect a specific one:
 **Anywhere** — insert a breakpoint in the source code:
 
 ```python
-__import__("pdb").set_trace()
+breakpoint()   # built-in since Python 3.7; opens pdb at this line
 ```
 
 Inside `pdb`: `u`/`d` to move frames, `p var` to inspect, `l` to list code,
@@ -899,9 +950,9 @@ Key takeaways:
 
 ---
 
-This is a presentation designed for use with `lookatme`:
-
-```console
-pip install lookatme
-lookatme docs/src/session2_datajoint.md --live
-```
+<!--
+PRESENTER NOTE
+To present these slides:
+    pip install lookatme
+    lookatme docs/src/session2_datajoint.md --live
+-->

@@ -82,10 +82,7 @@ class MyAnalysisSelection(SpyglassMixin, dj.Manual):
             Name of the parameter set to pair with each subject.
         """
         cls().insert(
-            [
-                {**key, "param_name": param_name}
-                for key in Subject.fetch("KEY")
-            ],
+            [{**key, "param_name": param_name} for key in Subject.fetch("KEY")],
             skip_duplicates=True,
         )
 

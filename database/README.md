@@ -11,8 +11,9 @@ commands.
 
 | Tool | Version | Install |
 | :--- | :------ | :------ |
-| Docker | ≥ 24.0 | <https://docs.docker.com/engine/install/> |
-| Docker Compose plugin | ≥ 2.20 | included with Docker Desktop; `apt install docker-compose-plugin` on Linux |
+| Docker | ≥ 24.0 | <https://docs.docker.com/engine/install/ubuntu/> |
+| Docker Compose plugin | ≥ 2.20 | `sudo apt install docker-compose-plugin` |
+| nfs-kernel-server | any | `sudo apt install nfs-kernel-server` *(only for `serve-data`)* |
 
 ---
 
@@ -138,26 +139,67 @@ bash init.sh reset   # ⚠ Destroy all data and reinitialise from init scripts
 
 ## Exposing NWB Data Files (Optional)
 
-If attendees need to download NWB files from the instructor machine for
-ingestion exercises:
+Attendees can mount the data directory as a network filesystem so they can
+point Spyglass's `base_dir` directly at it — no manual file downloads needed.
 
-1. Create `database/data/` and copy NWB files into it.
-2. Uncomment the `DATA_DIR` volume line in `docker-compose.yml` (the files
-   will be mounted read-only at `/mnt/nwb_data` inside the container).
-3. Serve them over HTTP so attendees can download without shell access:
+### 1. Populate the data directory
 
-   ```bash
-   python3 -m http.server 8080 --directory database/data/
-   # Attendees download at: http://<HOST>:8080/
-   ```
+```bash
+cp -r /path/to/nwb_files  database/data/
+```
+
+### 2. Start the NFS export
+
+```bash
+bash init.sh serve-data
+```
+
+This exports `database/data/` read-only via NFS and prints the exact mount
+commands to share with attendees.  Requires `nfs-kernel-server`:
+
+```bash
+sudo apt install nfs-kernel-server
+```
+
+Open port 2049 if the host firewall is active:
+
+```bash
+sudo ufw allow 2049/tcp
+```
+
+### 3. Attendees mount the share
+
+Distribute the NFS path printed by `serve-data` (format: `<HOST>:<PATH>`).
+
+```bash
+# Linux attendees
+sudo mkdir -p /mnt/workshop_data
+sudo mount -t nfs <HOST>:<PATH> /mnt/workshop_data
+
+# macOS attendees
+sudo mkdir -p /mnt/workshop_data
+sudo mount -t nfs -o resvport,ro <HOST>:<PATH> /mnt/workshop_data
+```
+
+### 4. Attendees configure Spyglass
+
+In their notebook or `~/.datajoint_config.json`:
+
+```python
+import spyglass as sg
+sg.set_base_dir("/mnt/workshop_data")
+```
+
+Spyglass will read NWB files from the mount exactly as if they were local.
 
 ---
 
 ## Teardown
 
-At the end of the workshop, stop and remove all resources:
+At the end of the workshop, stop all services and remove resources:
 
 ```bash
-docker compose -f database/docker-compose.yml down -v
-# -v also removes the named data volume.
+bash init.sh stop-data          # remove NFS export (if serve-data was used)
+bash init.sh stop               # stop the database container
+docker compose -f database/docker-compose.yml down -v   # also remove the data volume
 ```

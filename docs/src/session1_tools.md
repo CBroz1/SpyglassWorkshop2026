@@ -1,3 +1,14 @@
+<!--
+PRESENTER NOTE
+==============
+This file is a lookatme slide deck. Run it with:
+    pip install lookatme
+    lookatme docs/src/session1_tools.md --live
+
+The calibration slide below is for presenter setup only.
+`<!-- stop -->` markers pause the presentation mid-slide.
+Neither is visible in the rendered presentation itself.
+-->
 ---
 title: "Session 1: Tools for Scientific Computing"
 author: Chris Broz
@@ -6,6 +17,7 @@ styles:
     style: dracula
 ---
 
+<!-- PRESENTER: resize your terminal to match the calibration slide below -->
 # Calibration Slide
 
 ```
@@ -341,32 +353,6 @@ Try: `F12` on any imported function to jump to its source.
 
 ---
 
-# Jupyter
-
-## Jupytext — notebooks in version control
-
-`.ipynb` files store outputs and metadata alongside source, making `git diff`
-noisy.  `jupytext` converts a notebook to a plain Python script — clean diffs,
-no JSON, no embedded images.
-
-<!-- stop -->
-
-```bash
-# Convert all notebooks to lightweight Python scripts
-jupytext --to py:light notebooks/*.ipynb
-
-# Move them to a dedicated folder and format
-mv notebooks/*.py notebooks/py_scripts/
-ruff format notebooks/py_scripts/
-```
-
-<!-- stop -->
-
-The `# %%` markers in the `.py` files are understood by VS Code and
-JupyterLab — run them interactively or as a plain script.
-
----
-
 # Overview
 
 This session will cover ...
@@ -471,6 +457,32 @@ import logging
 <!-- stop -->
 
 `%debug` is especially useful — we will cover it shortly.
+
+---
+
+# Jupyter
+
+## Jupytext — notebooks in version control
+
+`.ipynb` files store outputs and metadata alongside source, making `git diff`
+noisy.  `jupytext` converts a notebook to a plain Python script — clean diffs,
+no JSON, no embedded images.
+
+<!-- stop -->
+
+```bash
+# Convert all notebooks to lightweight Python scripts
+jupytext --to py:light notebooks/*.ipynb
+
+# Move them to a dedicated folder and format
+mv notebooks/*.py notebooks/py_scripts/
+ruff format notebooks/py_scripts/
+```
+
+<!-- stop -->
+
+The `# %%` markers in the `.py` files are understood by VS Code and
+JupyterLab — run them interactively or as a plain script.
 
 ---
 
@@ -726,9 +738,9 @@ After the break: **Session 2 — Spyglass & DataJoint Infrastructure**
 
 ---
 
-This is a presentation designed for use with `lookatme`:
-
-```console
-pip install lookatme
-lookatme docs/src/session1_tools.md --live
-```
+<!--
+PRESENTER NOTE
+To present these slides:
+    pip install lookatme
+    lookatme docs/src/session1_tools.md --live
+-->

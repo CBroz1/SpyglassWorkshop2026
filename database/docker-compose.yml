@@ -12,9 +12,6 @@ services:
       - ./init:/docker-entrypoint-initdb.d:ro
       # Persistent data volume — survives container restarts.
       - workshop_data:/var/lib/mysql
-      # Optional: bind-mount a directory of NWB files for ingestion exercises.
-      # Uncomment the line below and set DATA_DIR in .env.
-      # - ${DATA_DIR:-./data}:/mnt/nwb_data:ro
     command: >
       --default-authentication-plugin=mysql_native_password
       --activate_all_roles_on_login=ON
