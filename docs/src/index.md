@@ -103,7 +103,7 @@ cd SpyglassWorkshop2026
 
 ```sh
 conda activate spyglass
-pip install -e ".[workshop]"
+pip install -e .
 pre-commit install
 ```
 

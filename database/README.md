@@ -212,7 +212,7 @@ Codespace (browser or VS Code) to get a self-contained database running on
 
    ```bash
    mkdir -p data
-   curl -L -o data/example.nwb \
+   curl -L -o data/minirec20230622.nwb \
        https://ucsf.box.com/shared/static/k3sgql6z475oia848q1rgms4zdh4rkjn.nwb
    ```
 
