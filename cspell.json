@@ -3,10 +3,6 @@
     "CHANGELOG.md",
     "**/*changelog.md"
   ],
-  "ignoreRegExpList": [
-    "/(`{3})[\\s\\S]+?\\1/g",
-    "/`([\\s\\S]+?)`/g"
-  ],
   "languageSettings": [
     {
       "languageId": "python",
@@ -16,19 +12,7 @@
       ]
     },
     {
-      "languageId": "javascript",
-      "includeRegExpList": [
-        "CStyleComment"
-      ]
-    },
-    {
       "languageId": "json",
-      "includeRegExpList": [
-        "CStyleComment"
-      ]
-    },
-    {
-      "languageId": "typescript",
       "includeRegExpList": [
         "CStyleComment"
       ]
@@ -49,6 +33,7 @@
     "blob",
     "celerybeat",
     "charliermarsh",
+    "cheatsheet",
     "ci",
     "codz",
     "cython",
@@ -57,29 +42,43 @@
     "debugpy",
     "dmypy",
     "donotpresent",
+    "edeno",
     "ehthumbs",
     "encryptable",
     "envrc",
     "esac",
     "esktop",
+    "exportfs",
+    "franklab",
     "fseventsd",
+    "healthcheck",
     "htmlcov",
+    "initdb",
     "inlinehilite",
     "intellicode",
     "ipynb",
     "ipython",
     "isort",
+    "jupytext",
     "kevinrose",
     "keymap",
+    "linearization",
     "longblob",
+    "lookatme",
     "macos",
     "magiclink",
     "mdformat",
+    "minirec",
     "minversion",
     "mkdocs",
     "msix",
     "mypy",
+    "mysqladmin",
+    "mysqldump",
+    "neuro",
     "nosetests",
+    "nwbfile",
+    "pgalley",
     "pkgs",
     "prereleases",
     "pybuilder",
@@ -95,11 +94,14 @@
     "pythonpath",
     "pytype",
     "quickstart",
+    "recarray",
     "repo",
     "repos",
+    "resvport",
     "ropeproject",
     "scrapy",
     "sdist",
+    "spikesorting",
     "spyderproject",
     "spyproject",
     "stackdump",

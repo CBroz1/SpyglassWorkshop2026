@@ -20,9 +20,20 @@
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": { "source.fixAll.ruff": "explicit" },
     },
-    "python.analysis.autoImportCompletions": false, // Disable auto-import
-    "python.analysis.typeCheckingMode": "standard", // Catch type errors early
     "python.languageServer": "Pylance",
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.autoImportCompletions": false, // Disable auto-import
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportIncompatibleMethodOverride": "none",
+        "reportGeneralTypeIssues": "warning", // Keep some type checking
+        "reportOptionalMemberAccess": "warning",
+        "reportOptionalSubscript": "warning"
+    },
+    // If pylance warning about missing packages that are installed,
+    // run `which python` and set the path below.
+    // "python.defaultInterpreterPath": "<result of `which python`>",
 
     // NOTEBOOKS
     "jupyter.askForKernelRestart": false, // Prevent dialog box on restart
@@ -37,8 +48,12 @@
     "cSpell.enabled": true, // SPELL
     "cSpell.language": "en,en-US,companies,python,python-common",
     "cSpell.maxDuplicateProblems": 2, // Only mention twice
-    "cSpell.spellCheckDelayMs": 500, // Wait 0.5s after save
-    "cSpell.enableFiletypes": [ "!json", "markdown", "yaml", "python" ],
+    "cSpell.enabledFileTypes": {
+        "markdown": true,
+        "yaml": true,
+        "text": true,
+        "json": false
+    },
     "cSpell.logLevel": "Warning", // Only show warnings, can turn off
 
     // MARKDOWN

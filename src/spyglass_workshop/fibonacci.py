@@ -11,7 +11,8 @@ def user_input() -> str:
     try:
         n = input("Please enter a number: ")
         return (
-            f"Fibonacci number {n} is: {f(int(n))}. The full list is:\n{f_list(int(n))}"
+            f"Fibonacci number {n} is: {f(int(n))}. "
+            + f"The full list is:\n{f_list(int(n))}"
         )
     except Exception as e:
         raise e

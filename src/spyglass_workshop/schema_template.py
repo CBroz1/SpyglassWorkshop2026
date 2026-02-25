@@ -23,9 +23,7 @@ the mean of all ``MyPart.result`` values for that key.  Update ``make``
 accordingly and re-run ``MyAnalysis().populate()``.
 """
 
-from typing import Union
-
-import datajoint as dj
+import datajoint as dj  # type: ignore
 from spyglass.common import Subject  # noqa: F401
 from spyglass.utils import SpyglassMixin, SpyglassMixinPart
 
@@ -61,7 +59,7 @@ class MyParams(SpyglassMixin, dj.Lookup):
 
 @schema
 class MyAnalysisSelection(SpyglassMixin, dj.Manual):
-    """Pairs of subjects and parameter sets to be analysed.
+    """Pairs of subjects and parameter sets to be analyzed.
 
     Insert rows here to schedule work for ``MyAnalysis().populate()``.
     Only the combinations you insert will be processed.
@@ -144,7 +142,7 @@ class MyAnalysis(SpyglassMixin, dj.Computed):
         self.MyPart().insert(part_rows)
 
     @staticmethod
-    def summarise(key: Union[str, dict]) -> dict:
+    def summarise(key: str | dict) -> dict:
         """Return a summary dict for a given key.
 
         Parameters

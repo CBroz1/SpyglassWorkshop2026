@@ -5,8 +5,7 @@ This module contains intentional bugs. Use the VS Code debugger or
 ``%debug`` in a Jupyter notebook to locate and fix them.
 
 Run the test suite to check your work::
-
-    pytest tests/examples/test_fibonacci_buggy.py -v
+    pytest tests/test_fibonacci_buggy.py -v
 """
 
 

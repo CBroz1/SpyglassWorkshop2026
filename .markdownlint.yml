@@ -1,0 +1,11 @@
+# Markdownlint configuration file
+# https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
+
+# MD024/no-duplicate-heading : Multiple headings with the same content
+MD024: false
+
+# MD025/single-title/single-h1 : Multiple top-level headings in the same doc
+MD025: false
+
+# MD041/first-line-heading/first-line-h1 : First line is top-level heading
+nesMD041: false

@@ -125,7 +125,7 @@ as your Python interpreter (`Ctrl+Shift+P` → `Python: Select Interpreter`).
 
 ## Repository Structure
 
-```
+```text
 SpyglassWorkshop2026/
 ├── .vscode/                 # Recommended VS Code settings and extensions
 ├── docs/src/                # Workshop slides and documentation (mkdocs)

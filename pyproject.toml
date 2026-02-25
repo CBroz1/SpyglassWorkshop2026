@@ -41,10 +41,15 @@ path = "src/spyglass_workshop/__init__.py"
 
 [tool.ruff]
 src = [ "src", "tests" ]
-
 format.docstring-code-format = true
-lint.extend-select = [ "I", "UP" ]
-lint.isort.known-first-party = [ "src", "tests" ]
+
+[tool.ruff.lint]
+ignore = [
+  "E402", # unused import
+  "F401", # import not at top of file
+]
+extend-select = [ "I", "UP" ]
+isort.known-first-party = [ "src", "tests" ]
 
 [tool.pytest.ini_options]
 addopts = "-q"

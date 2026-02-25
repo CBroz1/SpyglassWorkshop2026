@@ -8,7 +8,7 @@ styles:
 
 # Calibration Slide
 
-```
+```text
 Window must be this wide ─────────────────────────────────────────────────►
 
 And this tall
@@ -89,7 +89,7 @@ Version control lets you ...
 
 ## Key concepts
 
-```
+```text
   ┌─────────────────────────────────────┐
   │  Remote (github.com)                │
   │                                     │
@@ -124,7 +124,7 @@ Version control lets you ...
 
 A repository is just a directory with a standard layout:
 
-```
+```text
 SpyglassWorkshop2026/
 ├── .github/                 # issue templates and PR template
 ├── .gitignore               # files Git will never track (secrets, caches)
@@ -167,7 +167,7 @@ git checkout main                      # switch back
 
 Good branch names are short and descriptive:
 
-```
+```text
 alice/add-filtering-notebook
 fix/off-by-one-in-fibonacci
 docs/update-readme
@@ -210,11 +210,11 @@ git push origin your-name/my-change
 - Reference them in commit messages: `fix #42` auto-closes.
 - Useful even for solo projects — a searchable history of decisions.
 
-```
+```text
 Title: fibonacci_buggy.py: f(1) returns 0
 
 Steps to reproduce:
-  from spyglass_workshop.examples.fibonacci_buggy import f
+  from spyglass_workshop.fibonacci_buggy import f
   f(1)  # Expected: 1, Got: 0
 
 Environment: Python 3.11, spyglass-workshop 0.1.0
@@ -261,14 +261,14 @@ code /path/to/SpyglassWorkshop2026
 
 <!-- stop -->
 
-2. Accept the prompt to install recommended extensions
+1. Accept the prompt to install recommended extensions
    (from `.vscode/extensions.json`)
 
 <!-- stop -->
 
-3. Select the conda environment as your Python interpreter:
+1. Select the conda environment as your Python interpreter:
 
-```
+```text
 Ctrl+Shift+P  →  Python: Select Interpreter
 →  spyglass-workshop
 ```
@@ -301,7 +301,7 @@ These are already active — try saving a messy Python file.
 
 ## Recommended extensions
 
-**Python development**
+### Python development
 
 | Extension | Purpose |
 | :-------- | :------ |
@@ -312,12 +312,12 @@ These are already active — try saving a messy Python file.
 
 <!-- stop -->
 
-**Jupyter**
+### Jupyter
 
 | Extension | Purpose |
 | :-------- | :------ |
 | `ms-toolsai.jupyter` | Notebook support |
-| `ms-toolsai.vscode-jupyter-cell-tags` | Organise cells |
+| `ms-toolsai.vscode-jupyter-cell-tags` | Organize cells |
 | `ms-toolsai.jupyter-keymap` | Familiar keybindings |
 
 ---
@@ -404,10 +404,10 @@ Shortcuts (in command mode — press `Esc` first):
 
 The kernel is the Python process running behind the notebook.
 
-```
-Notebook (browser)  ←─-→  Kernel (Python process)
+```text
+Notebook (browser)  <->  Kernel (Python process)
      cell source                 executes code
-     cell output         ←──    returns result
+     cell output         <--    returns result
 ```
 
 <!-- stop -->
@@ -576,7 +576,7 @@ import datajoint as dj
 import numpy as np
 
 # 3. Local / relative imports
-from spyglass_workshop.examples.fibonacci import f
+from spyglass_workshop.fibonacci import f
 ```
 
 <!-- stop -->
@@ -715,7 +715,7 @@ After an exception in a cell, run `%debug` in a new cell:
 
 ```python
 # Cell 1 — causes an error
-from spyglass_workshop.examples.fibonacci_buggy import f
+from spyglass_workshop.fibonacci_buggy import f
 f(1)   # returns wrong answer — let's investigate
 
 # Cell 2 — enter the debugger
@@ -744,7 +744,7 @@ Inside `pdb`:
 `fibonacci_buggy.py` contains two bugs.
 
 ```python
-from spyglass_workshop.examples.fibonacci_buggy import f, f_list
+from spyglass_workshop.fibonacci_buggy import f, f_list
 
 print(f(1))         # Expected: 1
 print(f_list(5))    # Expected: [1, 1, 2, 3, 5]

@@ -2,7 +2,7 @@
 
 These tests define the *correct* expected behaviour. They will fail
 against the buggy module. Fix the bugs in
-``src/spyglass_workshop/examples/fibonacci_buggy.py`` until all
+``src/spyglass_workshop/fibonacci_buggy.py`` until all
 tests pass.
 """
 

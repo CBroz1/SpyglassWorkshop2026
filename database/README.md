@@ -13,7 +13,9 @@ commands.
 | :--- | :------ | :------ |
 | Docker | ≥ 24.0 | <https://docs.docker.com/engine/install/ubuntu/> |
 | Docker Compose plugin | ≥ 2.20 | `sudo apt install docker-compose-plugin` |
-| nfs-kernel-server | any | `sudo apt install nfs-kernel-server` *(only for `serve-data`)* |
+| nfs-kernel-server | any | `sudo apt install nfs-kernel-server`[^1] |
+
+[^1]: Only for `serve-data`
 
 ---
 
@@ -40,8 +42,8 @@ alphabetical order:
 
 | File | Purpose |
 | :--- | :------ |
-| `01_roles_users.sql` | Creates DB roles and the `sailor` / `captain` / `swab` user accounts |
-| `02_data.sql` *(optional)* | Place a mysqldump backup here to pre-populate the database |
+| `01_roles_users.sql` | Creates DB roles and the user accounts |
+| `02_data.sql` *(optional)* | Pre-populate database with mysqldump |
 
 ---
 
@@ -81,7 +83,7 @@ docker exec spyglass-workshop-db \
 All attendees share the same MySQL account.  Share the following over the
 workshop Slack channel or projector:
 
-```
+```text
 Host:     <LAN IP printed by init.sh>
 Port:     3306
 User:     sailor
@@ -132,7 +134,7 @@ bash init.sh start   # Start (or restart) the container
 bash init.sh stop    # Stop the container (data preserved)
 bash init.sh logs    # Stream container logs
 bash init.sh status  # Show container status
-bash init.sh reset   # ⚠ Destroy all data and reinitialise from init scripts
+bash init.sh reset   # ⚠ Destroy all data and reinitialize from init scripts
 ```
 
 ---
@@ -202,7 +204,7 @@ Codespace (browser or VS Code) to get a self-contained database running on
 
 1. Open the repository in a Codespace:
 
-   ```
+   ```text
    https://codespaces.new/<org>/<repo>
    ```
 
@@ -226,7 +228,7 @@ Codespace (browser or VS Code) to get a self-contained database running on
 
 ### Credentials (identical to the LAN instance)
 
-```
+```text
 Host     : 127.0.0.1
 Port     : 3306
 User     : sailor

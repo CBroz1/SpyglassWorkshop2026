@@ -9,7 +9,7 @@ styles:
 <!-- PRESENTER: resize your terminal to match the calibration slide below -->
 # Calibration Slide
 
-```
+```text
 Window must be this wide ─────────────────────────────────────────────────────►
 
 And this tall
@@ -67,7 +67,7 @@ This session will cover ...
 
 ## What are we connecting to?
 
-```
+```text
         ┌────────────────┐
         │   OS           │
         │┌──────────────┐│
@@ -88,7 +88,7 @@ This session will cover ...
 
 ## What are we connecting to?
 
-```
+```text
         ┌────────────────┐
         │   OS           │
         │┌──────────────┐│
@@ -109,7 +109,7 @@ This session will cover ...
 
 ## DataJoint's Role
 
-```
+```text
         ┌──────────┐  ┌────────┐
         │DataJoint─┼──┼─> MySQL│
         └──────────┘  └────────┘
@@ -184,7 +184,7 @@ A given experiment might have separate spreadsheets for ...
 
 SQL replaces this with tables that *know* their relationships:
 
-```
+```text
      ┌───────────────┐
      │SUBJECT        │
      │*subj_id*, name│
@@ -214,7 +214,7 @@ SQL replaces this with tables that *know* their relationships:
 - *Secondary key*: additional data stored per row; values may repeat
 - *Foreign key*: a reference to the primary key of another table
 
-```
+```text
      ┌───────────────┐
      │SUBJECT        │
      │*subj_id*, name│   subj_id is the primary key
@@ -384,7 +384,8 @@ The parentheses list the **base classes** this table inherits from:
 <!-- stop -->
 
 - `dj.Manual` — the DataJoint table *tier* (how it gets populated)
-- `SpyglassMixin` — adds Spyglass-specific helpers (`restrict_by`, `find_insert_fail`, …)
+- `SpyglassMixin` — adds Spyglass-specific helpers
+   (`restrict_by`, `find_insert_fail`, …)
 
 <!-- stop -->
 
@@ -392,7 +393,7 @@ The parentheses list the **base classes** this table inherits from:
 creates the SQL table on first import if it doesn't exist.
 
 > **What is a decorator?** The `@name` syntax above a class (or function)
-> wraps it to add behaviour. Here, `@schema` is shorthand for
+> wraps it to add behavior. Here, `@schema` is shorthand for
 > `ExampleTable = schema(ExampleTable)` — it hands the class to DataJoint,
 > which maps it to a SQL table and stores the mapping.
 
@@ -430,7 +431,7 @@ creates the SQL table on first import if it doesn't exist.
 
 ## Table Types: Diagram
 
-```
+```text
                ┌────┐
                │Data│
                └─┬──┘   ┌─────────────┐

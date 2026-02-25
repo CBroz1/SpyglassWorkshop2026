@@ -41,7 +41,7 @@ GRANT SELECT ON `%`.* TO 'dj_guest';
 -- ---------------------------------------------------------------------------
 
 -- Admin — instructor use only.
-CREATE USER IF NOT EXISTS 'captain'@'%' IDENTIFIED BY 'brigde';
+CREATE USER IF NOT EXISTS 'captain'@'%' IDENTIFIED BY 'bridge';
 GRANT 'dj_admin' TO 'captain'@'%';
 SET DEFAULT ROLE ALL TO 'captain'@'%';
 

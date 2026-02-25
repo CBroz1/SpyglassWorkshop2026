@@ -1,6 +1,6 @@
 import pytest
 
-from spyglass_workshop.examples import fibonacci
+from spyglass_workshop import fibonacci
 
 
 @pytest.mark.parametrize(

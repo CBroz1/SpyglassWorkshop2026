@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.17.0
+#       jupytext_version: 1.19.0
 #   kernelspec:
 #     display_name: spyglass
 #     language: python
@@ -138,8 +138,7 @@ def get_data_interface(
 
 import tempfile, textwrap, subprocess
 
-code = textwrap.dedent(
-    """
+code = textwrap.dedent("""
     def get_data_interface(nwbfile, data_interface_name, data_interface_class=None, unused_other_arg=None):
         ret = []
         for module in nwbfile.processing.values():
@@ -153,8 +152,7 @@ code = textwrap.dedent(
         if len(ret) >= 1:
             return ret[0]
         return None
-"""
-)
+""")
 
 with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as f:
     f.write(code)
@@ -446,7 +444,7 @@ def compute_stats(values, threshold=None, label="result"):
 # 2. Use `%debug` (after a cell that produces wrong output) or set VS Code
 #    breakpoints to step through execution.
 # 3. Identify the lines with the bugs.
-# 4. Fix them in `src/spyglass_workshop/examples/fibonacci_buggy.py`.
+# 4. Fix them in `src/spyglass_workshop/fibonacci_buggy.py`.
 # 5. Restart the kernel (`Kernel → Restart`) and re-run from Section 3
 #    to confirm the fix.
 
@@ -492,13 +490,13 @@ assert result == 1, f"f(1) should be 1, got {result}"
 #
 # Once you have identified both bugs:
 #
-# 1. Edit `src/spyglass_workshop/examples/fibonacci_buggy.py` in VS Code.
+# 1. Edit `src/spyglass_workshop/fibonacci_buggy.py` in VS Code.
 # 2. Restart this kernel (`Kernel → Restart`).
 # 3. Re-run the cells in this section — all comparisons should show `✓`.
 # 4. Run the test suite from the terminal:
 #
 # ```bash
-# pytest tests/examples/test_fibonacci_buggy.py -v
+# pytest tests/test_fibonacci_buggy.py -v
 # ```
 
 # ---
