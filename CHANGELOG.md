@@ -5,7 +5,7 @@ all notable changes to this project.
 
 ## [0.0.1] (Unreleased)
 
-<!-- Your changes here. -->
+- Add adder func for example PR conflict.
 
 ## [0.0.0] (February 24, 2026)
 
