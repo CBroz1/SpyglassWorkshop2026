@@ -6,34 +6,50 @@
     "editor.stickyScroll.enabled": true, // Show scope
     "files.associations": { "*.json": "jsonc" }, // Load JSON with comments
     "files.autoSave": "onFocusChange", // Save on focus change
-    "files.exclude": { "**/__pycache*": true, "**/.ipynb_ch*": true, }, // Hide
     "files.trimTrailingWhitespace": true,
     "diffEditor.ignoreTrimWhitespace": false, // Show whitespace diffs
     "git.autofetch": true, // Keep local branch in sync with remote
-    "git.enabled": true,
+    "git.enabled": true, // Enable Git integration
     "workbench.editor.highlightModifiedTabs": true, // Flag unsaved changes
-    "workbench.editorAssociations": { "*.ipynb": "jupyter-notebook", },
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook", // Open notebooks with jupyter extension
+    },
+    "files.exclude": { // Hide these files from the file explorer
+        "**/*.code-workspace": true, // Hide workspace files
+        "**/*egg-info": true, // Hide Python egg-info directories
+        "**/.coverage*": true, // Hide coverage reports
+        "**/.git/": true, // Hide Git metadata
+        "**/.ipynb_checkpoints": true, // Hide Jupyter checkpoints
+        "**/.pytest_cache": true, // Hide pytest cache
+        "**/.ruff_cache/": true, // Hide Ruff cache
+        "**/__pycache__*": true, // Hide Python bytecode caches
+        "**/py.typed": true, // Hide py.typed files
+    },
 
     // PYTHON
     "[python]": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true, // Format Python files on save
+        "editor.defaultFormatter": "charliermarsh.ruff", // Use Ruff for formatting
         "editor.codeActionsOnSave": { "source.fixAll.ruff": "explicit" },
     },
-    "python.languageServer": "Pylance",
-    "python-envs.defaultEnvManager": "ms-python.python:conda",
-    "python-envs.defaultPackageManager": "ms-python.python:conda",
-    "python.analysis.autoSearchPaths": true,
+    "python.languageServer": "Pylance", // Use Pylance for analysis
+    "python-envs.defaultEnvManager": "ms-python.python:conda", // Use Conda for environment management
+    "python-envs.defaultPackageManager": "ms-python.python:conda", // Use Conda for package management
+    "python.analysis.autoSearchPaths": true, // Automatically add workspace to analysis paths
     "python.analysis.autoImportCompletions": false, // Disable auto-import
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportIncompatibleMethodOverride": "none",
+    "python.analysis.diagnosticSeverityOverrides": { // Adjust Pylance diagnostics
+        "reportIncompatibleMethodOverride": "none", // Ignore method signature mismatches in overrides
         "reportGeneralTypeIssues": "warning", // Keep some type checking
-        "reportOptionalMemberAccess": "warning",
-        "reportOptionalSubscript": "warning"
+        "reportOptionalMemberAccess": "warning", // Warn on optional member access without checks
+        "reportOptionalSubscript": "warning" // Warn on optional subscript access without checks
     },
     // If pylance warning about missing packages that are installed,
     // run `which python` and set the path below.
     // "python.defaultInterpreterPath": "<result of `which python`>",
+
+    // If you want linting of DataJoint tables specifically,
+    // install https://github.com/CBroz1/datajoint_linter
+    // requires additional extensions
 
     // NOTEBOOKS
     "jupyter.askForKernelRestart": false, // Prevent dialog box on restart
@@ -44,8 +60,7 @@
 
     // AUTOCOMPLETION
     "editor.tabCompletion": "on", // tab over suggestions
-    "github.copilot.editor.enableAutoCompletions": true, // Copilot
-    "cSpell.enabled": true, // SPELL
+    "cSpell.enabled": true, // spell check
     "cSpell.language": "en,en-US,companies,python,python-common",
     "cSpell.maxDuplicateProblems": 2, // Only mention twice
     "cSpell.enabledFileTypes": {
@@ -57,11 +72,13 @@
     "cSpell.logLevel": "Warning", // Only show warnings, can turn off
 
     // MARKDOWN
-    "[markdown]": {
+    "[markdown]": { // markdownlint formatting
         "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
         "editor.formatOnSave": true,
     },
     "editor.codeActionsOnSave": { "source.fixAll.markdownlint": "explicit" },
+
+    // REWRAP - line breaks for markdown and comments with `Alt+Q`
     "rewrap.reformat": true, // allows context-aware rewrapping
     "rewrap.wrappingColumn": 80,
 }

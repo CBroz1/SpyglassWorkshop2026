@@ -3,8 +3,8 @@
 --   • Fixed typo: NORMAL_USER → sailor in the GRANT statement.
 --   • Added CREATE privilege to dj_user so attendees can declare their own
 --     schemas via dj.schema().
---   • Added ALL PRIVILEGES on %_workshop schemas so each attendee's personal
---     namespace (<username>_workshop) is writable.
+--   • Added ALL PRIVILEGES on workshop_% schemas so each attendee's personal
+--     namespace (workshop_<username>) is writable.
 --   • Added SET DEFAULT ROLE ALL for MySQL 8 role activation.
 
 -- ---------------------------------------------------------------------------
@@ -19,8 +19,6 @@ CREATE ROLE IF NOT EXISTS 'dj_user';
 GRANT CREATE ON *.* TO 'dj_user';
 -- Read access to everything.
 GRANT SELECT ON `%`.* TO 'dj_user';
--- Full access to each attendee's personal workshop schema (<username>_workshop).
-GRANT ALL PRIVILEGES ON `%\_workshop`.* TO 'dj_user';
 -- Full access to Spyglass pipeline schemas.
 GRANT ALL PRIVILEGES ON `common\_%`.* TO 'dj_user';
 GRANT ALL PRIVILEGES ON `spikesorting\_%`.* TO 'dj_user';

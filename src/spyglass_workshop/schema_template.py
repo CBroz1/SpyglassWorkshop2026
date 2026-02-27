@@ -13,7 +13,7 @@ pre-populated in the workshop MySQL instance.
 Usage
 -----
 Import this module in the Session 2 notebook to register the tables under
-your personal schema prefix (``<your-username>_workshop``). Then follow the
+your personal schema (``workshop_<your-username>``). Then follow the
 notebook instructions to populate and query them.
 
 Exercise
@@ -29,7 +29,7 @@ from spyglass.utils import SpyglassMixin, SpyglassMixinPart
 
 from spyglass_workshop.utils import SCHEMA_PREFIX
 
-schema = dj.schema(SCHEMA_PREFIX + "_workshop")
+schema = dj.schema("workshop_" + SCHEMA_PREFIX)
 
 
 @schema
@@ -142,7 +142,7 @@ class MyAnalysis(SpyglassMixin, dj.Computed):
         self.MyPart().insert(part_rows)
 
     @staticmethod
-    def summarise(key: str | dict) -> dict:
+    def summarize(key: str | dict) -> dict:
         """Return a summary dict for a given key.
 
         Parameters

@@ -5,23 +5,23 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.19.0
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: spyglass
+#     display_name: spy
 #     language: python
-#     name: spyglass
+#     name: python3
 # ---
 
 # # Session 2: Spyglass & DataJoint Infrastructure
 #
 # This notebook walks through the concepts covered in the Session 2 slides.
-# Work through each section in order — later sections depend on earlier ones.
+# Follow along to work at your own pace.
 #
 # **Prerequisites**
 #
 # - The workshop MySQL instance is running and you have received credentials.
 # - Your Spyglass environment is active: `conda activate spyglass`.
-# - The workshop package is installed: `pip install -e ".[workshop]"` (run once,
+# - The workshop package is installed: `pip install -e .` (run once,
 #   from the repo root, as shown in the "On the Day" setup steps).
 # - Spyglass is installed — confirmed by the check cell immediately below.
 
@@ -31,16 +31,19 @@
 
 missing = []
 try:
-    import datajoint  # noqa: F401
+    import datajoint  # type: ignore
 except ImportError:
     missing.append("datajoint  →  run:  pip install datajoint")
 
-try:
-    import spyglass  # noqa: F401
-except ImportError:
+import importlib
+
+# NOTE: Importing spyglass attempts a database connection we will set up later
+has_spyglass = importlib.util.find_spec("spyglass") is not None
+if not has_spyglass:
     missing.append(
-        "spyglass   →  run the Spyglass installer (see README Pre-Workshop Requirements)"
+        "spyglass  →  from a cloned spyglass repo: `./scripts/install.py`"
     )
+
 
 try:
     import spyglass_workshop  # noqa: F401
@@ -57,10 +60,89 @@ else:
     print("All required packages found. Ready to proceed.")
 # -
 
+# We'll stop here to review some slides: `docs/src/session2_datajoint.md`
+
+# ---
+# ## Mount the Shared Data
+#
+# The instructor has exported the NWB data files over the network (NFS).
+#
+# - **Linux / macOS** — run the cell below to mount the network share.
+# - **Windows** — NFS mounting requires pre-installing optional Windows
+#   features and uses a different syntax; the cell below will download
+#   the example file instead.
+#
+# > **Linux / macOS:** replace `NFS_PATH` with the path shown on the
+# > projector before running. It has the form `<HOST>:<EXPORT_PATH>`.
+#
+
+# +
+import os
+import sys
+import urllib.request
+from pathlib import Path
+
+NFS_PATH = "INSTRUCTOR_IP:EXPORT_PATH"  # <-- Linux/macOS: replace with path on projector
+NWB_URL = (
+    "https://ucsf.box.com/shared/static/k3sgql6z475oia848q1rgms4zdh4rkjn.nwb"
+)
+
+if sys.platform in ("linux", "darwin"):
+    MOUNT_POINT = "/mnt/workshop_data"
+    if os.path.ismount(MOUNT_POINT):
+        print(f"Already mounted at {MOUNT_POINT}")
+    else:
+        os.makedirs(MOUNT_POINT, exist_ok=True)
+        opts = "" if sys.platform == "linux" else "-o resvport,ro "
+        cmd = f"sudo mount -t nfs {opts}{NFS_PATH} {MOUNT_POINT}"
+        # sudo may prompt for your password in the terminal where Jupyter runs.
+        ret = os.system(cmd)
+        if ret != 0:
+            print(f"Mount failed (exit {ret}). Run in a terminal:\n  {cmd}")
+
+else:  # Windows — download the example NWB file
+    MOUNT_POINT = str(Path.home() / "workshop_data")
+    nwb_path = Path(MOUNT_POINT) / "raw" / "minirec20230622.nwb"
+    if nwb_path.exists():
+        print(f"Already downloaded: {nwb_path}")
+    else:
+        nwb_path.parent.mkdir(parents=True, exist_ok=True)
+        print("Downloading minirec20230622.nwb (may take several minutes) ...")
+
+        def _progress(n, block_size, total):
+            pct = min(100, n * block_size * 100 // total)
+            print(f"\r  {pct:3d}%", end="", flush=True)
+
+        urllib.request.urlretrieve(NWB_URL, nwb_path, reporthook=_progress)
+        print(f"\nSaved to {nwb_path}")
+
+if Path(MOUNT_POINT).exists():
+    print("Contents:", os.listdir(MOUNT_POINT))
+# -
+
+# **If the mount or download fails**, check these common causes:
+#
+# | Symptom | Likely cause | Fix |
+# | :------ | :----------- | :-- |
+# | `No such file or directory` (Linux/macOS) | Wrong export path | Confirm the exact path with the instructor |
+# | `Permission denied` (Linux/macOS) | sudo password needed | Run the mount command in a terminal instead |
+# | Connection refused or timeout (Linux/macOS) | Port 2049 blocked | Confirm you are on the same network as the instructor machine |
+# | `already mounted` (Linux/macOS) | Cell run twice | The mount is active — continue to the next cell |
+# | Download stalls or errors (Windows) | Network interruption | Re-run the cell — `urlretrieve` will overwrite the partial file |
+#
+
+# +
+import spyglass as sg
+
+sg.set_base_dir(MOUNT_POINT)
+print(f"Spyglass base_dir set to: {MOUNT_POINT}")
+# -
+
 # ---
 # ## The Config File
 #
-# DataJoint reads connection settings from `~/.datajoint_config.json`.
+# DataJoint reads connection settings from either `dj_local_conf.json` in the
+# current directory, or `~/.datajoint_config.json`.
 # The cell below writes that file using the workshop credentials.
 #
 # > **Note:** Replace `HOST` with the IP address given to you by the
@@ -78,17 +160,15 @@ config = {
     "database.user": "sailor",
     "database.password": "galley",
     "database.use_tls": False,
-    "loglevel": "WARNING",
-    "safemode": True,
-    "fetch_format": "array",
+    "custom": {"spyglass_dirs": {"base": "YOUR_MOUNT_POINT_HERE"}},
 }
 
-config_path = Path.home() / ".datajoint_config.json"
+config_path = Path("dj_local_conf.json")
 config_path.write_text(json.dumps(config, indent=2))
 print(f"Config written to {config_path}")
 
 # +
-import datajoint as dj
+import datajoint as dj  # type: ignore
 
 dj.config.load(str(Path.home() / ".datajoint_config.json"))
 
@@ -121,11 +201,14 @@ for s in sorted(schemas):
     print(" ", s)
 
 # +
-from spyglass.common import Subject, Session, Nwbfile
+from spyglass.common import Nwbfile, Session, Subject
+
+# See the table
+Nwbfile()
+# -
 
 # Show the table definition
 Subject.describe()
-# -
 
 # Fetch all subjects as a list of dicts.
 # as_dict=True  →  returns a list of plain Python dicts; easy to inspect
@@ -249,9 +332,9 @@ print("\nMyPart rows (first 10):")
 print(st.MyAnalysis.MyPart().fetch(limit=10, as_dict=True))
 # -
 
-# Use the built-in helper to summarise one result
+# Use the built-in helper to summarize one result
 first_key = st.MyAnalysis.fetch("KEY", limit=1)[0]
-st.MyAnalysis.summarise(first_key)
+st.MyAnalysis.summarize(first_key)
 
 # ### Exercise 3.1 — Run with a different parameter set
 #
@@ -271,6 +354,10 @@ st.MyAnalysis.summarise(first_key)
 
 # ---
 # ## Extend the Pipeline
+#
+# > **Open-ended extension:** This section is intentionally exploratory and
+# > may not be completed during the session — you are encouraged to finish
+# > it afterwards at your own pace.
 #
 # Your task is to add a `mean_result : float` secondary field to `MyAnalysis`
 # that stores the mean of all part results for that key.
@@ -325,7 +412,9 @@ for key in st.MyAnalysis.fetch("KEY"):
     stored_mean = (st.MyAnalysis & key).fetch1("mean_result")
     computed_mean = float(np.mean(part_results))
     match = "✓" if abs(stored_mean - computed_mean) < 1e-6 else "✗"
-    print(f"{key}  stored={stored_mean:.2f}  computed={computed_mean:.2f}  {match}")
+    print(
+        f"{key}  stored={stored_mean:.2f}  computed={computed_mean:.2f}  {match}"
+    )
 # -
 
 # ---

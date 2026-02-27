@@ -21,11 +21,19 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 dependencies = [
+  "coverage[toml]",   # test coverage measurement
   "jupytext",         # convert notebooks to python scripts
   "pre-commit",       # check files before
   "pytest>=8.1.1,<9", # testing framework
   "ruff>=0.15,<0.16", # linter and formatter
   "spyglass-neuro",   # ensure spyglass is installed
+]
+optional-dependencies.docs = [
+  "mkdocs<2",
+  "mkdocs-gen-files",
+  "mkdocs-literate-nav",
+  "mkdocs-material",
+  "mkdocstrings[python]",
 ]
 urls.Homepage = "https://github.com/CBroz1/SpyglassWorkshop2026"
 urls.Repository = "https://github.com/CBroz1/SpyglassWorkshop2026"
@@ -40,16 +48,22 @@ packages = [ "src/spyglass_workshop" ]
 path = "src/spyglass_workshop/__init__.py"
 
 [tool.ruff]
+line-length = 80
 src = [ "src", "tests" ]
-format.docstring-code-format = true
-
-[tool.ruff.lint]
-ignore = [
-  "E402", # unused import
-  "F401", # import not at top of file
+exclude = [
+  # Jupytext-generated mirrors of notebooks
+  "notebooks/py_scripts/",
+  # Intentionally buggy — used as a debugging exercise; must not be auto-fixed
+  "src/spyglass_workshop/channel_stats_buggy.py",
 ]
-extend-select = [ "I", "UP" ]
-isort.known-first-party = [ "src", "tests" ]
+
+format.docstring-code-format = true
+lint.extend-select = [ "I", "UP" ]
+lint.ignore = [
+  "E402", # unused import, which DataJoint tables require
+  "F401", # import not at top of file, which is common in notebooks
+]
+lint.isort.known-first-party = [ "src", "tests" ]
 
 [tool.pytest.ini_options]
 addopts = "-q"
@@ -64,6 +78,7 @@ show_missing = true
 [tool.coverage.run]
 command_line = "-m pytest"
 source_pkgs = [ "spyglass_workshop", "tests" ]
+omit = [ "*/schema_template.py" ]  # requires a live database connection
 
 [tool.coverage.paths]
 spyglass_workshop = [ "src/spyglass_workshop" ]

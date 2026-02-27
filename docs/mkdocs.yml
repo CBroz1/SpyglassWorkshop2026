@@ -21,6 +21,25 @@ nav:
   - "Home": "index.md"
   - "Session 1: Tools": "session1_tools.md"
   - "Session 2: DataJoint & Spyglass": "session2_datajoint.md"
+  - "API Reference": api/   # populated by gen-files + literate-nav
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - src/api/make_pages.py
+  - literate-nav:
+      nav_file: navigation.md
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [../src]
+          options:
+            docstring_style: numpy
+            show_source: true
+            show_root_heading: true
+            group_by_category: false
+            members_order: source
 repo_name: CBroz1/SpyglassWorkshop2026
 repo_url: https://github.com/CBroz1/SpyglassWorkshop2026
 site_name: Spyglass Workshop 2026

@@ -1,23 +1,22 @@
 # Workshop Database — Instructor Guide
 
-This directory contains everything needed to run the shared MySQL 8 instance
-for the Spyglass Workshop.  All steps below are for the **instructor machine**
-only — attendees connect as the `sailor` user and do not need to run these
-commands.
+This directory contains everything needed to run the shared MySQL 8 instance for
+the Spyglass Workshop. All steps below are for the **instructor machine** only —
+attendees connect as the `sailor` user and do not need to run these commands.
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
-| Tool | Version | Install |
-| :--- | :------ | :------ |
-| Docker | ≥ 24.0 | <https://docs.docker.com/engine/install/ubuntu/> |
-| Docker Compose plugin | ≥ 2.20 | `sudo apt install docker-compose-plugin` |
-| nfs-kernel-server | any | `sudo apt install nfs-kernel-server`[^1] |
+| Tool                  | Version | Install                                          |
+| :-------------------- | :------ | :----------------------------------------------- |
+| Docker                | ≥ 24.0  | <https://docs.docker.com/engine/install/ubuntu/> |
+| Docker Compose plugin | ≥ 2.20  | `sudo apt install docker-compose-plugin`         |
+| nfs-kernel-server     | any     | `sudo apt install nfs-kernel-server`[^1]         |
 
-[^1]: Only for `serve-data`
+\[^1\]: Only for `serve-data`
 
----
+______________________________________________________________________
 
 ## Quick Start
 
@@ -36,16 +35,16 @@ bash init.sh
 # 4. The script prints the LAN IP and connection details for attendees.
 ```
 
-The init scripts in `database/init/` run **once** when the data volume is
-empty (i.e. on the very first `docker compose up`).  They are processed in
-alphabetical order:
+The init scripts in `database/init/` run **once** when the data volume is empty
+(i.e. on the very first `docker compose up`). They are processed in alphabetical
+order:
 
-| File | Purpose |
-| :--- | :------ |
-| `01_roles_users.sql` | Creates DB roles and the user accounts |
-| `02_data.sql` *(optional)* | Pre-populate database with mysqldump |
+| File                       | Purpose                                |
+| :------------------------- | :------------------------------------- |
+| `01_roles_users.sql`       | Creates DB roles and the user accounts |
+| `02_data.sql` *(optional)* | Pre-populate database with mysqldump   |
 
----
+______________________________________________________________________
 
 ## Loading a Database Backup
 
@@ -76,12 +75,11 @@ docker exec spyglass-workshop-db \
     > database/init/02_data.sql
 ```
 
----
+______________________________________________________________________
 
 ## Distribute Credentials to Attendees
 
-All attendees share the same MySQL account.  Share the following over the
-workshop Slack channel or projector:
+All attendees share the same MySQL account. Share the following:
 
 ```text
 Host:     <LAN IP printed by init.sh>
@@ -90,13 +88,12 @@ User:     sailor
 Password: galley
 ```
 
-Attendees paste the host into the first notebook cell (`nb02-config-write`)
-to configure DataJoint on their machines.  Their personal schema prefix is
-derived from their laptop OS username (e.g. `alice_workshop`), so each
-attendee gets an isolated namespace even though they share the `sailor`
-account.
+Attendees paste the host into the first cell in the second notebook. Their
+personal schema prefix is derived from their laptop OS username (e.g.
+`alice_workshop`), so each attendee gets an isolated namespace even though they
+share the `sailor` account.
 
----
+______________________________________________________________________
 
 ## Verify Remote Connectivity
 
@@ -125,7 +122,7 @@ If the connection is refused, check:
    - macOS: System Settings → Firewall → allow incoming connections for Docker
 3. The attendee is on the same network as the instructor machine.
 
----
+______________________________________________________________________
 
 ## Common Operations
 
@@ -137,12 +134,12 @@ bash init.sh status  # Show container status
 bash init.sh reset   # ⚠ Destroy all data and reinitialize from init scripts
 ```
 
----
+______________________________________________________________________
 
 ## Exposing NWB Data Files (Optional)
 
-Attendees can mount the data directory as a network filesystem so they can
-point Spyglass's `base_dir` directly at it — no manual file downloads needed.
+Attendees can mount the data directory as a network filesystem so they can point
+Spyglass's `base_dir` directly at it — no manual file downloads needed.
 
 ### 1. Populate the data directory
 
@@ -157,7 +154,7 @@ bash init.sh serve-data
 ```
 
 This exports `database/data/` read-only via NFS and prints the exact mount
-commands to share with attendees.  Requires `nfs-kernel-server`:
+commands to share with attendees. Requires `nfs-kernel-server`:
 
 ```bash
 sudo apt install nfs-kernel-server
@@ -194,7 +191,7 @@ sg.set_base_dir("/mnt/workshop_data")
 
 Spyglass will read NWB files from the mount exactly as if they were local.
 
----
+______________________________________________________________________
 
 ## Codespaces Fallback
 
@@ -235,7 +232,7 @@ User     : sailor
 Password : galley
 ```
 
----
+______________________________________________________________________
 
 ## Teardown
 

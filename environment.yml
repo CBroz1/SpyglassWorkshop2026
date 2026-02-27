@@ -17,6 +17,7 @@ channels:
 dependencies:
   # Must match Spyglass's python constraint (see spyglass pyproject.toml).
   - python>=3.10,<3.13
+  - ipykernel # add conda environment to VSCode kernels
   - pip
   - pip:
       - -e . # this package
