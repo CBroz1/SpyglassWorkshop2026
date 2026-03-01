@@ -26,8 +26,10 @@
     "EDITMSG",
     "Spyder",
     "Streamlit",
+    "Trodes",
     "VIRTUALENV",
     "addopts",
+    "aggr",
     "apdisk",
     "autofetch",
     "autohide",
@@ -114,6 +116,7 @@
     "pythonpath",
     "pytype",
     "quickstart",
+    "randomstring",
     "recarray",
     "repo",
     "repos",
@@ -134,6 +137,7 @@
     "superfences",
     "tamasfe",
     "tasklist",
+    "tbls",
     "testpaths",
     "timeit",
     "timemachine",
@@ -146,6 +150,7 @@
     "visualstudioexptteam",
     "vscodeintellicode",
     "webassets",
-    "xpass"
+    "xpass",
+    "yourrandomtext"
   ]
 }

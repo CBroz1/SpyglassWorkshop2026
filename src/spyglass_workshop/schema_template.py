@@ -23,13 +23,33 @@ the mean of all ``MyPart.result`` values for that key.  Update ``make``
 accordingly and re-run ``MyAnalysis().populate()``.
 """
 
+import os
+
 import datajoint as dj  # type: ignore
-from spyglass.common import Subject  # noqa: F401
 from spyglass.utils import SpyglassMixin, SpyglassMixinPart
 
-from spyglass_workshop.utils import SCHEMA_PREFIX
+this_user = os.getenv("USER", "workshop")
 
-schema = dj.schema("workshop_" + SCHEMA_PREFIX)
+# NOTE: To ensure your tables are unique to you, change the schema name below
+# to something unique (e.g., `workshop_randomstring`).
+
+schema = dj.schema(f"workshop_{this_user}")
+
+
+@schema
+class MySubject(SpyglassMixin, dj.Lookup):
+    """Subjects to be analyzed."""
+
+    definition = """
+    subject_id : varchar(32)   # unique subject identifier
+    ---
+    subject_info : blob        # dict of subject metadata
+    """
+
+    contents = [
+        ["subject1", {"dob": "2020-01-01", "species": "mouse"}],
+        ["subject2", {"dob": "2021-06-15", "species": "rat"}],
+    ]
 
 
 @schema
@@ -66,7 +86,7 @@ class MyAnalysisSelection(SpyglassMixin, dj.Manual):
     """
 
     definition = """
-    -> Subject
+    -> MySubject
     -> MyParams
     """
 
@@ -80,7 +100,10 @@ class MyAnalysisSelection(SpyglassMixin, dj.Manual):
             Name of the parameter set to pair with each subject.
         """
         cls().insert(
-            [{**key, "param_name": param_name} for key in Subject.fetch("KEY")],
+            [
+                {**key, "param_name": param_name}
+                for key in MySubject.fetch("KEY")
+            ],
             skip_duplicates=True,
         )
 

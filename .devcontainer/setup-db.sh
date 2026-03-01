@@ -38,7 +38,22 @@ sudo service mysql restart
 mysql -u root -p"${ROOT_PASSWORD}" < "$INIT_SQL"
 
 # ---------------------------------------------------------------------------
-# 3. Done
+# 3. Download workshop data archive
+# ---------------------------------------------------------------------------
+
+DATA_DIR="$HOME/spyglass_data"
+ZIP_URL="https://ucsf.box.com/shared/static/biwz0jx2zzhin1h1io4vi4gwdwm580cn.zip"
+
+echo "Downloading workshop data archive ..."
+mkdir -p "$DATA_DIR"
+wget -q --show-progress -O /tmp/spyglass_data.zip "$ZIP_URL"
+echo "Unpacking to ${DATA_DIR} ..."
+unzip -q /tmp/spyglass_data.zip -d "$DATA_DIR"
+rm /tmp/spyglass_data.zip
+echo "Workshop data ready at ${DATA_DIR}"
+
+# ---------------------------------------------------------------------------
+# 4. Done
 # ---------------------------------------------------------------------------
 
 echo ""

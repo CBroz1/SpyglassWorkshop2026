@@ -26,14 +26,24 @@ cd database/
 cp .env.example .env
 #    Edit .env: set MYSQL_ROOT_PASSWORD to something secure.
 
-# 2. (Recommended) Place a mysqldump backup in the init directory.
+# 2. Place the mysqldump backup in the init directory.
 #    See "Loading a Database Backup" below.
 
-# 3. Start the container (first run also loads all init scripts).
+# 3. Run the single start command (from any working directory after first run).
 bash init.sh
-
-# 4. The script prints the LAN IP and connection details for attendees.
+# or, after the symlink is created:
+bash /tmp/workshop/init.sh
 ```
+
+A single `bash init.sh` does everything in sequence:
+
+1. Starts the MySQL container and waits for it to be healthy
+2. Loads `init/02_data.sql` into the running container (skipped with a warning
+   if absent)
+3. Starts the NFS data share (skipped with a warning if `nfs-kernel-server` is
+   not installed)
+4. Creates `/tmp/workshop → database/` so subsequent commands are easy to type
+5. Prints a summary box with the DB host, credentials, and NFS mount command
 
 The init scripts in `database/init/` run **once** when the data volume is empty
 (i.e. on the very first `docker compose up`). They are processed in alphabetical
@@ -65,6 +75,19 @@ All demo data is loaded from a mysqldump file you supply before the workshop.
 
 The backup is loaded **after** `01_roles_users.sql`, so the `sailor` account
 already exists when the data is restored.
+
+### Loading into an already-running container
+
+If the container started without `02_data.sql` (e.g. the file was added later),
+load it without resetting the volume:
+
+```bash
+bash init.sh load-data
+```
+
+This pipes `database/init/02_data.sql` directly into the running
+`spyglass-workshop-db` container. Existing tables are overwritten by the dump;
+roles and user accounts created by `01_roles_users.sql` are preserved.
 
 To generate a fresh backup from the running container at any time:
 
@@ -127,12 +150,18 @@ ______________________________________________________________________
 ## Common Operations
 
 ```bash
-bash init.sh start   # Start (or restart) the container
-bash init.sh stop    # Stop the container (data preserved)
-bash init.sh logs    # Stream container logs
-bash init.sh status  # Show container status
-bash init.sh reset   # ⚠ Destroy all data and reinitialize from init scripts
+bash /tmp/workshop/init.sh            # start everything (DB + data + NFS)
+bash /tmp/workshop/init.sh stop       # stop the container (data preserved)
+bash /tmp/workshop/init.sh load-data  # (re-)load init/02_data.sql
+bash /tmp/workshop/init.sh serve-data # (re-)start the NFS export
+bash /tmp/workshop/init.sh logs       # stream container logs
+bash /tmp/workshop/init.sh status     # show container status
+bash /tmp/workshop/init.sh reset      # ⚠ destroy all data and reinitialize
 ```
+
+> `/tmp/workshop` is a symlink created by `bash init.sh`. If the machine has
+> rebooted since the last run, re-run `bash database/init.sh` once to recreate
+> it.
 
 ______________________________________________________________________
 
@@ -172,13 +201,16 @@ Distribute the NFS path printed by `serve-data` (format: `<HOST>:<PATH>`).
 
 ```bash
 # Linux attendees
-sudo mkdir -p /mnt/workshop_data
-sudo mount -t nfs <HOST>:<PATH> /mnt/workshop_data
+mkdir -p ~/spyglass_data
+sudo mount -t nfs <HOST>:/tmp/spyglass_data ~/spyglass_data
 
 # macOS attendees
-sudo mkdir -p /mnt/workshop_data
-sudo mount -t nfs -o resvport,ro <HOST>:<PATH> /mnt/workshop_data
+mkdir -p ~/spyglass_data
+sudo mount -t nfs -o resvport,ro <HOST>:/tmp/spyglass_data ~/spyglass_data
 ```
+
+`/tmp/spyglass_data` is a symlink created by `init.sh` that points to
+`database/data/` — it gives attendees a short, stable path to type.
 
 ### 4. Attendees configure Spyglass
 
@@ -186,7 +218,7 @@ In their notebook or `~/.datajoint_config.json`:
 
 ```python
 import spyglass as sg
-sg.set_base_dir("/mnt/workshop_data")
+sg.set_base_dir("~/spyglass_data")
 ```
 
 Spyglass will read NWB files from the mount exactly as if they were local.

@@ -1,11 +1,15 @@
-______________________________________________________________________
-
-## title: "Session 2: Spyglass & DataJoint Infrastructure" author: Chris Broz date: 01/2026 styles: style: dracula
+---
+title: "Session 2: Spyglass & DataJoint Infrastructure"
+author: Chris Broz
+date: 03/2026
+styles:
+    style: dracula
+---
 
 # Calibration Slide
 
 ```text
-Window must be this wide ─────────────────────────────────────────────────────►
+Window must be this wide ──────────────────────────────────────────────────────────────────────────────►
 
 And this tall
 │
@@ -46,9 +50,10 @@ If you haven't already done so, please ...
 2. Install this workshop's repo
    1. `git clone https://github.com/CBroz1/SpyglassWorkshop2026`
    2. Install as editable: `pip install -e ./SpyglassWorkshop2026`
-   3. `conda run -n spyglass python -m ipykernel install --user --name spyglass`
+   3. Add kernel:
+      `conda run -n spyglass python -m ipykernel install --user --name spyglass`
    4. Run the first cell in `./notebooks/02_datajoint_spyglass.ipynb`
-   5. Write down IP for later: TBD
+   5. Write down IP for later: TBD:/tmp/spyglass_data
    6. Optionally, poke around `./docs` and `./notebooks`
 
 # Overview
@@ -58,6 +63,7 @@ This session will cover ...
 - ⭕ DataJoint Infrastructure
 - ⭕ DataJoint Table Tiers and Declaration Syntax
 - ⭕ Spyglass Table Types, including Merge Tables
+- ⭕ Table Operators
 - ⭕ Creating a Custom Pipeline
 - ⭕ Common DataJoint Errors
 
@@ -68,6 +74,7 @@ ______________________________________________________________________
 - 👀 DataJoint Infrastructure
 - ⭕ DataJoint Table Tiers and Declaration Syntax
 - ⭕ Spyglass Table Types, including Merge Tables
+- ⭕ Table Operators
 - ⭕ Creating a Custom Pipeline
 - ⭕ Common DataJoint Errors
 
@@ -146,79 +153,6 @@ ______________________________________________________________________
 
 # Infrastructure
 
-## The Config File
-
-The minimal fields needed to connect to the workshop database:
-
-```json
-{
-    "database.host":     "<TBD>",
-    "database.user":     "sailor",
-    "database.password": "galley",
-    "database.port":     3306,
-    "database.use_tls":  false,
-    "custom": {
-        "spyglass_dirs": {
-            "base": "<YOUR MOUNTED PATH>"
-        }
-    }
-
-}
-```
-
-<!-- stop -->
-
-DataJoint looks for either...
-
-1. A local config file: `./dj_local_conf.json`
-2. A global config file: `~/.datajoint_config.json`
-
-```python
-import datajoint as dj
-dj.config.load("path/to/dj_local_conf.json")
-dj.conn().ping()   # raises an error if the connection fails
-```
-
-______________________________________________________________________
-
-# Infrastructure
-
-## Data Files
-
-The workshop provides NWB data files via a read-only network share (NFS).
-
-<!-- stop -->
-
-Open `notebooks/02_datajoint_spyglass.ipynb` — **Data Files section**.
-
-**Linux / macOS** — mount the share (instructor shares the NFS path):
-
-```bash
-sudo mkdir -p /mnt/workshop_data
-# Linux:
-sudo mount -t nfs <HOST>:<EXPORT_PATH> /mnt/workshop_data
-# macOS:
-sudo mount -t nfs -o resvport,ro <HOST>:<EXPORT_PATH> /mnt/workshop_data
-```
-
-<!-- stop -->
-
-**Windows** — NFS requires pre-installing optional Windows features. The
-notebook cell downloads the example file automatically instead.
-
-<!-- stop -->
-
-Once the data is available, tell Spyglass where to look:
-
-```python
-import spyglass as sg
-sg.set_base_dir(MOUNT_POINT)   # set by the notebook cell above
-```
-
-______________________________________________________________________
-
-# Infrastructure
-
 ## SQL's Role
 
 A given experiment might have separate spreadsheets for ...
@@ -244,13 +178,12 @@ SQL replaces this with tables that *know* their relationships:
      │SESSION                      │  │ PARAMETERS                │
      │*subj_id*, *session_id*, time│  │ *param_id*, param1, param2│
      └─────────────┬───────────────┘  └────────────┬──────────────┘
-                   └──────────────────┬─────────────┘
+                   └──────────────────┬────────────┘
                                       ▼
-                       ┌──────────────────────────────┐
-                       │ANALYSIS                      │
-                       │*subj_id*, *session_id*,      │
-                       │*param_id*                    │
-                       └──────────────────────────────┘
+               ┌───────────────────────────────────────────┐
+               │ANALYSIS                                   │
+               │*subj_id*, *session_id*, *param_id*, result│
+               └───────────────────────────────────────────┘
 ```
 
 ______________________________________________________________________
@@ -285,32 +218,94 @@ ______________________________________________________________________
 
 # Infrastructure
 
-## DataJoint's Constraints
+## Syncing Code and Database
 
-DataJoint is *opinionated* — it limits the full power of SQL to enforce good
-practices:
+Experiments evolve.
 
-<!-- stop -->
+DataJoint's role as interface means YOU must keep track.
 
-- Every table must have a primary key.
-- Foreign keys must reference existing tables.
-- `populate` respects the dependency graph (no orphaned rows).
-- Deletes cascade upstream to protect data integrity.
-
-<!-- stop -->
-
-Python stores **two things** that can drift out of sync with each other:
-
-- A copy of your table *definitions* (the Python class)
-- The *data* that was inserted under a previous definition
+```text
+┌──────────────────────────┐     ┌──────────────────────────┐
+│  Python  (in git)        │     │  Database  (persistent)  │
+│                          │     │                          │
+│  class definition   ─────┼────►│  table structure         │
+│  insert logic       ─────┼────►│  computed rows           │
+└──────────────────────────┘     └──────────────────────────┘
+```
 
 <!-- stop -->
 
-Good data provenance requires **good version control** to keep these in sync.
+- Changing **`definition`** → table structure no longer matches the class
+- Changing **function logic** → existing rows were produced by old logic
+
+<!-- stop -->
+
+Git commit history a link between a row and the code that made it.
+
+**Version-control your schema** alongside your data.
 
 ______________________________________________________________________
 
 # Infrastructure
+
+Follow along in `notebooks/02_datajoint_spyglass.ipynb` — **Section 1**.
+
+## Shared Drives
+
+Spyglass relies on shared network drives for data files.
+
+```bash
+mkdir -p ~/spyglass_data
+# Linux:
+sudo mount -t nfs <TBD>:/tmp/spyglass_data ~/spyglass_data
+# macOS:
+sudo mount -t nfs -o resvport,ro <TBD>:/tmp/spyglass_data ~/spyglass_data
+```
+
+If on Windows, download from and unpack to your data directory.
+
+`https://ucsf.box.com/v/SpyglassWorkshop2026Data`
+
+______________________________________________________________________
+
+# Infrastructure
+
+Follow along in `notebooks/02_datajoint_spyglass.ipynb` — **Section 1**.
+
+## Database Connection & The Config File
+
+The minimal fields needed to connect to the workshop database:
+
+```json
+{
+    "database.host":   "TBD",
+    "database.user":     "sailor",
+    "database.password": "galley",
+    "database.port":     3306,
+    "database.use_tls":  false,
+    "custom": {
+        "spyglass_dirs": {
+            "base": "<YOUR MOUNTED PATH>"
+        }
+    }
+
+}
+```
+
+<!-- stop -->
+
+1. Local config: `./dj_local_conf.json`
+2. Global config: `~/.datajoint_config.json`
+
+```python
+import datajoint as dj
+dj.config.load("path/to/dj_local_conf.json")
+dj.conn().ping()   # raises an error if the connection fails
+```
+
+______________________________________________________________________
+
+# Database Connection
 
 ## Explore Existing Spyglass Tables
 
@@ -340,6 +335,7 @@ ______________________________________________________________________
 - ✅ DataJoint Infrastructure
 - 👀 DataJoint Table Tiers and Declaration Syntax
 - 👀 Spyglass Table Types, including Merge Tables
+- ⭕ Table Operators
 - ⭕ Creating a Custom Pipeline
 - ⭕ Common DataJoint Errors
 
@@ -371,21 +367,13 @@ from typing import Union           # individual class import
 import datajoint as dj             # aliased package import
 
 from spyglass.common import (      # individual imports from a package
-    Nwbfile,                       # noqa: F401 silences "unused" linter warning
+    Nwbfile, # noqa: F401          # noqa: F401 silences "unused" linter warning
     Subject,
 )
 from spyglass.utils import SpyglassMixin
 
-from spyglass_workshop.utils import SCHEMA_PREFIX   # relative import
+from .utils import SCHEMA_PREFIX   # relative import
 ```
-
-<!-- stop -->
-
-Import types in order (enforced by `ruff`):
-
-1. Standard library (`os`, `typing`, …)
-2. Third-party packages (`datajoint`, `spyglass`, …)
-3. Local / relative imports (`spyglass_workshop.utils`, …)
 
 ______________________________________________________________________
 
@@ -394,28 +382,48 @@ ______________________________________________________________________
 ## Front Matter: Schema Declaration
 
 ```python
-schema = dj.schema("workshop_" + SCHEMA_PREFIX)
+schema = dj.schema("workshop_<YourName>")
+
+@schema
+class ExampleTable(...):
+    pass
 ```
 
 <!-- stop -->
 
 - Database permissions are managed **by schema prefix**
-- Spyglass uses shared prefixes (`common_*`, `lfp_*`, …) — **do not add to
-  these**
+- Spyglass uses shared prefixes (e.g., `common_*`) - **do not add to these**
 - Use your username or a project-specific prefix for your own tables
 
+______________________________________________________________________
+
+# Python Structure
+
+## Table Syntax: Decorator
+
 ```python
-# example: attendee "alice" gets tables in "workshop_alice"
-import os
-SCHEMA_PREFIX = os.getenv("USER", "workshop")
+schema = dj.schema("workshop_<YourName>")
+
+@schema
+class ExampleTable(...):
+    pass
 ```
 
 <!-- stop -->
 
+`@schema` is a *decorator* that registers the class with the database.
+
+> **What is a decorator?** The `@` syntax above wraps a class or function to add
+> behavior. Here, it passes the definition for declaration or fetching.
+
+When inspecting existing tables, we can see their full names:
+
 ```python
+from datajoint.utils import to_camel_case
+
 # Spyglass shared tables live under their own prefixes:
-Subject.full_table_name       # "`common_subject`.`subject`"
-Nwbfile.full_table_name       # "`common`.`_nwbfile`"
+ExampleTable.full_table_name == "`workshop_name`.`example_table`"
+to_camel_case(ExampleTable.table_name) == "ExampleTable"
 ```
 
 ______________________________________________________________________
@@ -435,18 +443,18 @@ The parentheses list the **base classes** this table inherits from:
 <!-- stop -->
 
 - `dj.Manual` — the DataJoint table *tier* (how it gets populated)
-- `SpyglassMixin` — adds Spyglass-specific helpers (`restrict_by`,
-  `find_insert_fail`, …)
+- `SpyglassMixin` — adds helpers (`<<`, `find_insert_fail`, etc.)
 
-<!-- stop -->
+```python
+from spyglass.position.position_merge import PositionOutput
 
-`@schema` is a *decorator* that registers the class with the database and
-creates the SQL table on first import if it doesn't exist.
+# What does this table inherit from?
+PositionOutput.__bases__
 
-> **What is a decorator?** The `@name` syntax above a class (or function) wraps
-> it to add behavior. Here, `@schema` is shorthand for
-> `ExampleTable = schema(ExampleTable)` — it hands the class to DataJoint, which
-> maps it to a SQL table and stores the mapping.
+# What does that class do?
+help(PositionOutput.__bases__[1].__bases__[-1])
+dir(PositionOutput.__bases__[1].__bases__[-1])
+```
 
 ______________________________________________________________________
 
@@ -454,17 +462,17 @@ ______________________________________________________________________
 
 ## Table Syntax: DataJoint Table Tiers
 
-| Tier          | Populated by                   | Use case                       |
-| :------------ | :----------------------------- | :----------------------------- |
-| `dj.Manual`   | A person, via `insert`         | Subjects, sessions, selections |
-| `dj.Lookup`   | Declared in `contents`         | Parameter sets, lookup values  |
-| `dj.Imported` | `make`, reading external files | NWB ingestion                  |
-| `dj.Computed` | `make`, from upstream tables   | Analysis results               |
-| `dj.Part`     | Master table's `make`          | One-to-many sub-records        |
+| Tier          | DB prefix    | Populated by                   | Use case                       |
+| :------------ | :----------- | :----------------------------- | :----------------------------- |
+| `dj.Manual`   | *(none)*     | A person, via `insert`         | Subjects, sessions, selections |
+| `dj.Lookup`   | `#`          | Declared in `contents`         | Parameter sets, lookup values  |
+| `dj.Imported` | `_`          | `make`, reading external files | NWB ingestion                  |
+| `dj.Computed` | `__`         | `make`, from upstream tables   | Analysis results               |
+| `dj.Part`     | `<master>__` | Master table's `make`          | One-to-many sub-records        |
 
-______________________________________________________________________
+Note: `Imported` vs `Computed` is an unenforced convention.
 
-# Python Structure
+<!-- stop -->
 
 ## Table Syntax: Spyglass Conceptual Types
 
@@ -476,6 +484,21 @@ ______________________________________________________________________
 |      Analysis | Computed            | Run `make`, store results             |
 |         Merge | `_Merge` with Parts | Unify outputs from multiple pipelines |
 
+<!-- stop -->
+
+```python
+from spyglass.ripple.v1.ripple import schema
+
+tbls = schema.list_tables()  # shows all tables in the schema
+tbls = [
+    '#ripple_parameters',
+    'ripple_l_f_p_selection',
+    'ripple_l_f_p_selection__ripple_l_f_p_electrode',
+    '__ripple_times_v1'
+]
+
+```
+
 ______________________________________________________________________
 
 # Python Structure
@@ -485,22 +508,22 @@ ______________________________________________________________________
 ```text
                ┌────┐
                │Data│
-               └─┬──┘   ┌─────────────┐
-    ┌────────────┼───┐  │  ┌──────────┼─────┐
-    │Schema      │   │  │  │Merge     │     │
-    │            │   │  │  │Schema    │     │
-    │┌─────────┐ │   │  │  │          │     │
-    ││Parameter│ │   │  │  │┌─────┐   │     │
-    │└────┬────┘ │   │  │  ││Merge│   │     │
-    │     ▼      ▼   │  │  │└───┬─┘   │     │
-    │    ┌─────────┐ │  │  │    ▼     ▼     │
-    │    │Selection│ │  │  │  ┌──────────┐  │
-    │    └────┬────┘ │  │  │  │Merge Part│  │
-    │         ▼      │  │  │  └──────────┘  │
-    │    ┌─────────┐ │  │  │                │
-    │    │Analysis │ │  │  │                │
-    │    └────┬────┘ │  │  │                │
-    └─────────┼──────┘  │  └────────────────┘
+               └─┬──┘   ┌──────────────┐
+    ┌────────────┼───┐  │  ┌───────────┼───────┐
+    │Schema      │   │  │  │Merge      │       │
+    │            │   │  │  │Schema     │       │
+    │┌─────────┐ │   │  │  │           │       │
+    ││Parameter│ │   │  │  │┌──────┐   │       │
+    │└────┬────┘ │   │  │  ││Merge │   │       │
+    │     ▼      ▼   │  │  │└────┬─┘   │       │
+    │    ┌─────────┐ │  │  │     ▼     ▼       │
+    │    │Selection│ │  │  │    ┌───────────┐  │
+    │    └────┬────┘ │  │  │    │Merge Part │  │
+    │         ▼      │  │  │    └───────────┘  │
+    │    ┌─────────┐ │  │  │                   │
+    │    │Analysis │ │  │  │                   │
+    │    └────┬────┘ │  │  │                   │
+    └─────────┼──────┘  │  └───────────────────┘
               └─────────┘
 ```
 
@@ -510,7 +533,39 @@ ______________________________________________________________________
 
 # Python Structure
 
+## Table Types: Diagram
+
+```text
+               ┌────┐
+               │Data│
+               └─┬──┘   ┌──────────────┐          ┌──────────────┐
+    ┌────────────┼───┐  │  ┌───────────┼───────┐  │  ┌───────────┼───────┐
+    │Schema      │   │  │  │Merge      │       │  │  │New        │       │
+    │            │   │  │  │Schema     │       │  │  │Schema     │       │
+    │┌─────────┐ │   │  │  │           │       │  │  │           ▼       │
+    ││Parameter│ │   │  │  │┌──────┐   │       │  │  │    ┌───────────┐  │
+    │└────┬────┘ │   │  │  ││Merge │   │       │  │  │    │Next Table │  │
+    │     ▼      ▼   │  │  │└─┬──┬─┘   │       │  │  │    └───────────┘  │
+    │    ┌─────────┐ │  │  │  │  ▼     ▼       │  │  │                   │
+    │    │Selection│ │  │  │  │ ┌───────────┐  │  │  │                   │
+    │    └────┬────┘ │  │  │  │ │Merge Part │  │  │  │                   │
+    │         ▼      │  │  │  │ └───────────┘  │  │  │                   │
+    │    ┌─────────┐ │  │  │  │                │  │  │                   │
+    │    │Analysis │ │  │  │  │                │  │  │                   │
+    │    └────┬────┘ │  │  │  │                │  │  │                   │
+    └─────────┼──────┘  │  └──┼────────────────┘  │  └───────────────────┘
+              └─────────┘     └───────────────────┘
+```
+
+Downstream, reference the **Merge** table directly — not a Merge Part
+
+______________________________________________________________________
+
+# Python Structure
+
 ## Table Syntax: Definitions
+
+<!-- stop -->
 
 ```python
 @schema
@@ -523,8 +578,9 @@ class ExampleTable(SpyglassMixin, dj.Manual):
     ---
     secondary_field : varchar(32)  # string, max 32 chars
     blob_field      : blob         # any Python object (dict, array, …)
-    -> Subject                     # foreign key: inherits Subject's PK
-    -> Subject.proj(src='subject_id')  # foreign key with renamed column
+    [unique] some_id: uuid         # enforced unique key
+    -> [nullable] Table            # foreign key: inherits Table's PK
+    -> Table.proj(dest='src')      # foreign key with renamed column
     """
 ```
 
@@ -539,37 +595,192 @@ ______________________________________________________________________
 
 # Python Structure
 
-## Table Syntax: Methods
+## Declaration Limitations
 
-```python
-@schema
-class SubjBlinded(SpyglassMixin, dj.Manual):
-    ...
+<!-- stop -->
 
-    @property                    # accessed as SubjBlinded().pk (no call)
-    def pk(self):
-        return self.heading.primary_key
+**Naming**
 
-    @staticmethod                # no access to class or instance
-    def _hash(subject_id):
-        return dj.hash.key_hash({"subject_id": subject_id})
+- Class names must be `CamelCase`; attribute names `snake_case` only
+- Attribute names must be lowercase, no spaces or hyphens
 
-    @classmethod                 # access to class but not instance
-    def insert_default(cls):
-        cls().insert(cls.contents, skip_duplicates=True)
+**Primary key**
 
-    def blind_subjects(self, restriction):   # full instance access
-        keys = (Subject & restriction).fetch("KEY")
-        self.insert([{**k, "subject_id": self._hash(k)} for k in keys])
-```
+- Every table must have a primary key
+- Primary key fields cannot be nullable or have default values (except
+  `auto_increment`)
+- Blobs, JSON, and filepaths cannot be primary key fields
+
+<!-- stop -->
+
+**Foreign keys**
+
+- Must reference an existing base table — not a query expression
+- Only `[nullable]` and `[unique]` modifiers are allowed
+
+**Part tables**
+
+- Part tables cannot be nested (no parts of parts)
+- Parts cannot be deleted or dropped directly — delete from the master
+
+<!-- stop -->
+
+**After declaration**
+
+- Primary keys, foreign keys, and indexes **cannot be altered** — you must
+  delete all downstream data and redeclare the table
+- New tables cannot be declared from inside a `make`/`populate` call
 
 ______________________________________________________________________
 
 # Python Structure
 
-## Declare Your Own Schema
+## Explore Existing Spyglass Tables
+
+Spyglass pre-populates a shared `common` schema for every dataset.
 
 Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 2**.
+
+```python
+from spyglass.common import Subject, Session
+
+# Show the table definition
+Subject.describe()
+
+# Fetch all subjects
+subjects = Subject.fetch(as_dict=True)
+print(f"{len(subjects)} subjects in the database")
+
+# Restrict: & filters; join: * combines tables
+mice = Subject & {"species": "Mus musculus"}
+subj_sessions = Subject * Session
+```
+
+______________________________________________________________________
+
+# Overview
+
+- ✅ DataJoint Infrastructure
+- ✅ DataJoint Table Tiers and Declaration Syntax
+- ✅ Spyglass Table Types, including Merge Tables
+- 👀 Table Operators
+- ⭕ Creating a Custom Pipeline
+- ⭕ Common DataJoint Errors
+
+______________________________________________________________________
+
+# Table Operators
+
+DataJoint provides Python operators for querying across tables.
+
+| Operator         | What it does                                                          |
+| :--------------- | :-------------------------------------------------------------------- |
+| `A & r`          | **Restrict** — filter rows of `A` by a dict, string, or another table |
+| `A * B`          | **Join** — combine columns from `A` and `B` where their keys match    |
+| `A - B`          | **Minus** — rows of `A` whose keys do not appear in `B`               |
+| `A.proj()`       | **Project** — select or rename specific columns                       |
+| `A.insert()`     | **Insert** — add new rows to `A`                                      |
+| `A.fetch()`      | **Fetch** — query results as Python objects                           |
+| `A.aggr(B, ...)` | **Aggregate** — group by `A` and compute stats on `B`                 |
+
+______________________________________________________________________
+
+# Table Operators
+
+## Restrict `&` and Join `*`
+
+**Restrict** filters rows of a table by a condition (dict, string or other
+table)
+
+- **Dicts** match one exact value per field
+- **Strings** accept any condition — patterns, ranges, and combinations
+
+```python
+Subject & {"subject_id": "alice_1"}          # only "alice_1"
+Subject & "subject_id LIKE 'alice%'"         # everyone starting with "alice"
+Subject & "subject_id LIKE '%_1'"            # any subject ending in "_1"
+Session & "session_date > '2024-01-01'"      # date range
+Subject & "sex = 'F' AND age > 365"          # multiple conditions
+
+recorded  = Session & Nwbfile     # sessions that have a linked NWB file
+
+# Join: combine columns from two tables that share primary key fields
+subj_sessions = Subject * Session   # one row per (subject, session) pair
+
+# Chain — operations compose left-to-right
+alice_sessions = Subject * Session & "subject_id LIKE 'alice%'"
+```
+
+Prefer strings for long-distance restrictions — they let you match a *group* of
+upstream entries rather than a single exact key.
+
+______________________________________________________________________
+
+# Table Operators
+
+## Long-Distance Restriction: `<<` and `>>`
+
+Standard `&` requires the restriction field to exist in the table's own primary
+key. `SpyglassMixin` adds operators that walk the dependency graph to find a
+compatible ancestor or descendant:
+
+| Operator | Direction                           | Reads as                           |
+| :------- | :---------------------------------- | :--------------------------------- |
+| `A << r` | **Upstream** — toward root tables   | "restrict A by an ancestor field"  |
+| `A >> r` | **Downstream** — toward leaf tables | "restrict A by a descendant field" |
+
+```python
+# All LFP results for subjects whose ID starts with "alice"
+lfp_results = LFPOutput() << "subject_id LIKE 'alice%'"
+
+# All upstream subjects linked to sessions after a cutoff date
+subjects = Subject() >> "session_date > '2024-01-01'"
+```
+
+<!-- stop -->
+
+If `<<` returns `None`, the search may have taken the wrong path. Ban
+intermediate tables to make the path unambiguous:
+
+```python
+table.ban_search_table(UnwantedIntermediate)
+result = table << "subject_id LIKE 'alice%'"
+```
+
+______________________________________________________________________
+
+# Table Operators
+
+## Practice
+
+Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 3**.
+
+```python
+import spyglass_workshop.schema_template as st
+
+# 1. Dict vs string restriction — compare the results
+Subject & {"subject_id": "alice_1"}          # exact match
+Subject & "subject_id LIKE 'alice%'"         # all subjects starting with "alice"
+
+# 2. Join and chain
+mice   = Subject & "species LIKE '%musculus%'"
+joined = mice * Session
+print(f"{len(joined)} subject-session pairs")
+
+# 3. Long-distance restriction — upstream
+st.MyAnalysis() << "subject_id LIKE 'alice%'"
+
+# 4. Long-distance restriction — downstream
+st.MyParams() >> "subject_id LIKE 'alice%'"
+```
+
+______________________________________________________________________
+
+# Exercise Time
+
+## Declare Your Own Schema
+
+Open `notebooks/02_datajoint_spyglass.ipynb`
 
 `schema_template.py` implements the patterns from this section. Importing it
 registers your personal schema in the database:
@@ -581,7 +792,8 @@ import spyglass_workshop.schema_template as st
 dj.Diagram(st.schema).draw()
 
 # Inspect each table's definition
-for table_cls in [st.MyParams, st.MyAnalysisSelection, st.MyAnalysis]:
+my_tables = [st.MyParams, st.MyAnalysisSelection, st.MyAnalysis]
+for table_cls in my_tables:
     table_cls.describe()
 
 # Populate the Lookup table with default parameter sets
@@ -595,6 +807,7 @@ ______________________________________________________________________
 - ✅ DataJoint Infrastructure
 - ✅ DataJoint Table Tiers and Declaration Syntax
 - ✅ Spyglass Table Types, including Merge Tables
+- ✅ Table Operators
 - 👀 Creating a Custom Pipeline
 - ⭕ Common DataJoint Errors
 
@@ -755,7 +968,7 @@ ______________________________________________________________________
 
 ## Run the Pipeline
 
-Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 3**.
+Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 4**.
 
 ```python
 # Pair subjects with the 'default' parameter set
@@ -896,6 +1109,7 @@ ______________________________________________________________________
 - ✅ DataJoint Infrastructure
 - ✅ DataJoint Table Tiers and Declaration Syntax
 - ✅ Spyglass Table Types, including Merge Tables
+- ✅ Table Operators
 - ✅ Creating a Custom Pipeline
 - 👀 Common DataJoint Errors
 
@@ -1065,6 +1279,7 @@ ______________________________________________________________________
 - ✅ DataJoint Infrastructure
 - ✅ DataJoint Table Tiers and Declaration Syntax
 - ✅ Spyglass Table Types, including Merge Tables
+- ✅ Table Operators
 - ✅ Creating a Custom Pipeline
 - ✅ Common DataJoint Errors
 
@@ -1079,12 +1294,3 @@ Key takeaways:
 - Spyglass pattern: Parameter → Selection → Analysis (→ Merge)
 - `populate()` runs `make` for every unprocessed Selection row
 - When things go wrong: `find_insert_fail`, `SHOW GRANTS`, `%debug`
-
-______________________________________________________________________
-
-<!--
-PRESENTER NOTE
-To present these slides:
-    pip install lookatme
-    lookatme docs/src/session2_datajoint.md --live
--->

@@ -1,6 +1,10 @@
-______________________________________________________________________
-
-## title: "Session 1: Tools for Scientific Computing" author: Chris Broz date: 01/2026 styles: style: dracula
+---
+title: "Session 2: Spyglass & DataJoint Infrastructure"
+author: Chris Broz
+date: 03/2026
+styles:
+    style: dracula
+---
 
 # Calibration Slide
 
@@ -47,10 +51,9 @@ If you haven't already done so...
 5. Run the following:
 
 > ```bash
-> git clone <https://github.com/><YOU>/SpyglassWorkshop2026
-> cd SpyglassWorkshop
+> git clone https://github.com/YOU/SpyglassWorkshop2026 # clone your fork
 > conda activate spyglass
-> conda env update -f environment.yml
+> conda env update -f ./SpyglassWorkshop2026/environment.yml
 > python -m ipykernel install --user --name spyglass
 > ```
 

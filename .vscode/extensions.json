@@ -18,7 +18,7 @@
         "ms-toolsai.jupyter-renderers",
         "ms-toolsai.vscode-jupyter-cell-tags",
         // Autocompletion/Markdown
-        "github.copilot-chat",
+        // "github.copilot-chat", // Trivializes exercises, not for workshop
         "davidanson.vscode-markdownlint",
         "stkb.rewrap",
         "streetsidesoftware.code-spell-checker",
