@@ -1,8 +1,5 @@
 # Spyglass Workshop 2026
 
-**NOTE**: This workshop is currently in development and subject to change.
-Please check back for updates on March 4th, 2026.
-
 A hands-on workshop covering practical scientific computing tools and the
 [Spyglass](https://github.com/LorenFrankLab/spyglass) neuroscience data
 framework.

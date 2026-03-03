@@ -33,7 +33,6 @@ Run the test suite to verify all three fixes::
     pytest tests/test_channel_stats_buggy.py -v
 """
 
-
 # NOTE: To hide indented text in VS Code, click the arrows. Or for docstrings:
 #       `Ctrl+Shift+P` → "Pylance: Fold All Docstrings"
 #       Explore various folding options: "Unfold all", "Fold Level 2", etc.

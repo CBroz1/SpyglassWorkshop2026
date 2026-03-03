@@ -18,7 +18,9 @@
 # exercises — complete at your own pace.
 #
 # > **Kernel setup (one-time):** this notebook must run inside the `spyglass`
-# > conda environment. If you have not already registered it as a Jupyter kernel,
+# > conda environment.
+# >
+# > If you have not already registered it as a Jupyter kernel,
 # > open a terminal and run:
 # > ```bash
 # > conda activate spyglass
@@ -70,7 +72,7 @@ print(a)
 # [Shortcut Cheatsheet](https://jupyter-tutorial.readthedocs.io/en/24.1.0/notebook/shortcuts.html)
 
 # ---
-# ## GitHub
+# ## Section 1: GitHub
 #
 # The cells below use the `!` prefix to run shell commands from inside the
 # notebook. This is equivalent to typing them in a terminal.
@@ -100,6 +102,9 @@ print(a)
 # ### Exercise 1.2 - Create a commit
 
 # Next, we'll make a commit with the outstanding edits to this notebook.
+#
+# > **Prerequisite:** This commit will only have content if you save
+# > edits to this file, like cell outputs.
 
 # !git add 01_tools_exercises.ipynb
 # !git commit -m "Example commit"
@@ -108,8 +113,7 @@ print(a)
 
 # !git log --oneline -3
 
-# ---
-# ## Type hints & docstrings
+# ## Section 2: Type hints & docstrings
 #
 # Type hints are not enforced at runtime but make function signatures
 # self-documenting, and editors use them for autocomplete and error
@@ -168,7 +172,7 @@ print(a)
 #
 # </details>
 #
-# **Exercise 2** — add type hints and a NumPy docstring to the function below.
+# ### Exercise 2.1: add type hints & docstring
 
 
 # +
@@ -193,7 +197,7 @@ print(bytes_to_human_readable(123456789, sum_inputs=False))
 # -
 
 # ---
-# ## `ruff`
+# ## Section 3: `ruff`
 #
 # In this section you will run `ruff` on a script with many linting issues
 # and see how many problems it catches automatically.
@@ -289,7 +293,8 @@ print("Written to temp_bad_example.py")
 # +
 import subprocess
 
-# Or run this in your terminal: ruff check /tmp/bad_example.py
+# Click 'scrollable element' to view full output in Jupyter,
+# or run this in your terminal: ruff check /tmp/bad_example.py
 result = subprocess.run(
     ["ruff", "check", "temp_bad_example.py"],
     capture_output=True,
@@ -311,15 +316,12 @@ result = subprocess.run(
 print(result.stdout or "No remaining issues.")
 # -
 
-# ### Exercise 3.1 — Fix the remaining issues
+# ### Exercise 3.1: Fix the remaining issues
 #
 # After `ruff --fix` and `ruff format`, some issues require manual
-# intervention because they involve judgement calls that a tool cannot
+# edits because they involve judgement calls that a tool cannot
 # make automatically (e.g., which variable name to use, whether an
 # `import` is actually needed).
-#
-# The cell below prints the remaining warnings and the current file
-# contents. Read them, then:
 #
 # 1. Edit `temp_bad_example.py` directly in VS Code to address the remaining issues.
 # 2. Re-run `ruff check` to confirm zero issues remain.
@@ -342,7 +344,7 @@ print(remaining.stdout)
 # -
 
 # ---
-# ## Readable Code
+# ## Section 4: Readable Code
 #
 # Good code is easy to re-read six months later. The exercises below prompt you
 # to revise existing code for readability
@@ -354,6 +356,8 @@ print(remaining.stdout)
 #
 # Deep nesting makes code hard to follow and raised more questions than it answers.
 #
+# **Q/A annotation method:**
+#
 # 1. Number every question that arises as you read (`1Q`, `2Q`, …) as comments.
 # 2. Read again and pair each answer to its question (`1A`, `2A`, …).
 # 3. Refactor so to reduce the distance between question and answers.
@@ -362,7 +366,6 @@ print(remaining.stdout)
 #
 # 1. Which subjects can this handle?
 # 2. What does this `try` do?
-#
 #
 
 
@@ -516,7 +519,9 @@ class DataProcessor:
 #   one level of nesting and surfaces the error immediately.
 # - **Class-level dict** `SUBJECT_SETTINGS`: adding a new subject requires
 #   no changes to the method logic.
-# - **`:=` walrus operator**: assigns and tests `subject` in one expression.
+# - **`:=` walrus operator**: `(subject := config.get("subject"))` assigns the
+#   result of `config.get("subject")` to `subject` *and* evaluates it as part
+#   of the `if` condition in a single expression — a Python 3.8+ feature.
 # - **Helper method** `_process_file`: gives the inner loop body a name,
 #   so `process` reads as a high-level sequence of steps.
 # - **`logger`** vs `print`: log level (`INFO`, `WARNING`) can be adjusted
@@ -527,7 +532,7 @@ class DataProcessor:
 #
 # </details>
 
-# ### Exercise 4.2 — Formatting and readability
+# ### Exercise 4.2: Formatting and readability
 #
 # The function below is syntactically correct but hard to read and has some bugs.
 #
@@ -539,7 +544,7 @@ def get_data_interface(
     nwbfile,
     data_interface_name,
     data_interface_class=None,
-    unused_other_arg=None,
+    other_arg=None,
 ):
     din, dic = data_interface_name, data_interface_class
     ret = []
@@ -570,7 +575,7 @@ def get_data_interface(
 
 # <details><summary>Hint 1</summary>
 #
-# - What is `unused_other_arg` for? Remove it.
+# - What is `other_arg` for? Remove it.
 # - Add docstrings and type hints
 #
 # </details>
@@ -642,15 +647,15 @@ def get_data_interface(
 # </details>
 #
 
-# ---
-#
-# ## Debugging (time permitting)
+# ## Section 5: Debugging (time permitting)
 #
 # > **Guided walkthrough:** This section is run as a class demo with the
 # > instructor.
 #
 
-# `channel_stats_buggy.py` contains two bugs that raises an exception
+# ### Debugging `f(n)` with `%debug`
+#
+# `channel_stats_buggy.py` contains three bugs that raises an exception
 # deep in a 4-level call stack — the kind of crash where the error message
 # alone doesn't tell you what went wrong.
 #
@@ -686,9 +691,9 @@ result = summarize(recording)
 
 # %debug
 
-# Instead of this interface, let's try other ways.
+# `%debug` can be helpful, but this UI is clunky.
 #
-# **First Option**: terminal with `%debug`
+# **Alternative 1: IPython terminal with `%debug`**
 #
 # 1. Launch `ipython -i src/spyglass_workshop/channel_stats_buggy.py`, executing the `__main__` clause.
 # 2. Inspect the error stack.
@@ -697,17 +702,19 @@ result = summarize(recording)
 # 5. Fix error
 # 6. Fully quit out (`quit` and `quit` again) and rerun.
 #
-# **Next**, Run and Debug
+# **Alternative 2: VS Code Run and Debug**
 #
 # 1. Either...
 #
 #     1. Press `Ctrl+Shift+D` → click **▶ Run and Debug** (or `F5`).
 #     2. Click the down arrow on the cell: **Debug Cell**.
+#
 # 2. Look at the **Call Stack** panel on the left to see the various functions called.
 # 3. In the **Variables** panel, find `n` inside `_std` — why is it `0`?
 # 5. Fix a bug, then re-run (`F5`).
 
 # ---
+
 # ## Summary
 #
 # You have worked through:
@@ -721,3 +728,201 @@ result = summarize(recording)
 # | Debugging | `%debug` and VS Code breakpoints give you a live inspector |
 #
 # **Next:** after the break, open `notebooks/02_datajoint_spyglass.ipynb`.
+
+# ---
+#
+
+# ## Section 6: Advanced Exercises *(take-home)*
+#
+# The exercises below extend the session material into a complete developer
+# workflow. Expected time: 30-60m
+#
+# **You will need:**
+# - The branch you created in Exercise 1.1 (make sure you are on it: `git branch`)
+# - The `spyglass` conda environment active
+# - The package installed in editable mode: `pip install -e .`
+
+# ### Exercise 5.1 — Write a function and its pytest
+#
+# Add a `format_duration` function to `src/spyglass_workshop/utils.py`
+# that converts a duration to a human-readable string. Then, add tests.
+#
+# **Specification**
+#
+# ```python
+# def format_duration(seconds: float) -> str:
+#     """Return a human-readable string for a duration in seconds."""
+# ```
+#
+# | Input | Expected output |
+# | :---- | :-------------- |
+# | `0.001` | `"1.00 ms"` |
+# | `0.5` | `"500.00 ms"` |
+# | `1.0` | `"1.00 s"` |
+# | `30.75` | `"30.75 s"` |
+# | `60.0` | `"1 min 0.00 s"` |
+# | `75.3` | `"1 min 15.30 s"` |
+# | `3661.5` | `"1 h 1 min 1.50 s"` |
+# | `−1.0` | raises `ValueError` |
+#
+# **Steps**
+#
+# 1. Open `src/spyglass_workshop/utils.py` in VS Code and add the function with
+#    a complete NumPy-style docstring and type hints.
+# 2. Open `tests/test_utils.py` and write tests using `pytest.mark.parametrize`
+#    (for valid inputs) and `pytest.raises` (for the `ValueError` case).
+# 3. Run your tests from the terminal:
+#
+# ```bash
+# pytest tests/test_utils.py -v
+# ```
+#
+# 4. Iterate until all tests pass, then run the full suite to make sure nothing
+#    else broke:
+#
+# ```bash
+# pytest
+# ```
+#
+# <details><summary>Function Hint</summary>
+#
+# Try modeling your function after
+# `spyglass.utils.dj_helper_fn.bytes_to_human_readable`
+#
+#
+# </details>
+#
+# <details><summary>Function Solution</summary>
+#
+# ```python
+# def format_duration(seconds: float) -> str:
+#     """Return a human-readable string for a duration in seconds.
+#
+#     Parameters
+#     ----------
+#     seconds : float
+#         Non-negative duration in seconds.
+#
+#     Returns
+#     -------
+#     str
+#         Formatted string, e.g. ``"1 min 15.30 s"`` or ``"500.00 ms"``.
+#
+#     Raises
+#     ------
+#     ValueError
+#         If *seconds* is negative.
+#
+#     Examples
+#     --------
+#     >>> format_duration(0.5)
+#     '500.00 ms'
+#     >>> format_duration(75.3)
+#     '1 min 15.30 s'
+#     """
+#     if seconds < 0:
+#         raise ValueError(f"seconds must be non-negative, got {seconds}")
+#     if seconds < 1:
+#         return f"{seconds * 1000:.2f} ms"
+#     if seconds < 60:
+#         return f"{seconds:.2f} s"
+#     minutes, secs = divmod(seconds, 60)
+#     if minutes < 60:
+#         return f"{int(minutes)} min {secs:.2f} s"
+#     hours, minutes = divmod(minutes, 60)
+#     return f"{int(hours)} h {int(minutes)} min {secs:.2f} s"
+# ```
+#
+# </details>
+#
+# <details><summary>Test Hint</summary>
+#
+# Look at the tests in this package,
+# `tests/test_fibonacci.test_fibonacci`, for an example of how to test
+# inputs and outputs.
+#
+# We should also test the error case. For an example, see
+# [documentation](https://docs.pytest.org/en/7.1.x/how-to/assert.html#assertions-about-expected-exceptions).
+#
+# </details>
+#
+# <details><summary>Test Solution</summary>
+#
+# ```python
+# import pytest
+# from spyglass_workshop.utils import format_duration
+#
+#
+# @pytest.mark.parametrize(
+#     "seconds, expected",
+#     [
+#         (0.001, "1.00 ms"),
+#         (0.5,   "500.00 ms"),
+#         (1.0,   "1.00 s"),
+#         (30.75, "30.75 s"),
+#         (60.0,  "1 min 0.00 s"),
+#         (75.3,  "1 min 15.30 s"),
+#         (3661.5, "1 h 1 min 1.50 s"),
+#     ],
+# )
+# def test_format_duration(seconds, expected):
+#     assert format_duration(seconds) == expected
+#
+#
+# def test_format_duration_negative_raises():
+#     with pytest.raises(ValueError, match="non-negative"):
+#         format_duration(-1.0)
+# ```
+#
+# </details>
+
+# ### Exercise 5.2 — Edit and publish the docs
+#
+# Every `.py` file in `src/spyglass_workshop/` is **automatically documented**:
+# the `mkdocs` build reads every docstring and renders it as an HTML API
+# reference page. That means `format_duration`, including its `Examples`
+# block and parameter table — will appear in the live site the moment it has
+# a docstring.
+#
+# **Steps**
+#
+# 1. **Preview locally** — in a terminal (not a notebook cell), run:
+#
+#    ```bash
+#    mkdocs serve --config-file docs/mkdocs.yml
+#    ```
+#
+#    This output will show warnings for any possible issues.
+#
+#    Open `http://localhost:8000` in a browser. Navigate to
+#    **API Reference → utils** and verify that `format_duration` appears with
+#    its full docstring rendered. Press `Ctrl+C` to stop the server when done.
+#
+# 2. **Add a personal note to `README.md`** — open it in VS Code and add
+#    a sentence or two: your name, one thing you found interesting today, or
+#    a question to follow up on. This gives your PR a visible change beyond
+#    code.
+#
+# 3. **Stage and commit** all three modified files:
+#
+#    ```bash
+#    git add src/spyglass_workshop/utils.py tests/test_utils.py README.md
+#    git commit -m "Add format_duration utility with tests"
+#    ```
+#
+#    The `pre-commit` hooks will run `ruff` automatically. If they reformat
+#    anything, re-stage and commit again.
+#
+# 4. **Push to your fork:**
+#
+#    ```bash
+#    git push origin <your-branch-name>
+#    ```
+#
+# 5. *(Optional)* **Open a pull request.** Go to
+#    `https://github.com/CBroz1/SpyglassWorkshop2026/compare`, choose your
+#    fork and branch as the *compare* side, and open a PR with a short
+#    description of what `format_duration` does and why it is useful.
+#
+# > **What happens in CI?** What can you do to trigger the GitHub Actions
+# > for tests and docs?

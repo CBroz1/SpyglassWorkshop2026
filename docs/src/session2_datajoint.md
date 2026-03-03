@@ -1,9 +1,9 @@
 ---
-title: "Session 2: Spyglass & DataJoint Infrastructure"
+title: 'Session 2: Spyglass & DataJoint Infrastructure'
 author: Chris Broz
 date: 03/2026
 styles:
-    style: dracula
+  style: dracula
 ---
 
 # Calibration Slide
@@ -46,7 +46,7 @@ If you haven't already done so, please ...
 
 1. Install Spyglass
    1. `git clone https://github.com/LorenFrankLab/spyglass`
-   2. `./spyglass/scripts/install.py --minimal` # Takes time
+   2. `python spyglass/scripts/install.py --minimal` # Takes time
 2. Install this workshop's repo
    1. `git clone https://github.com/CBroz1/SpyglassWorkshop2026`
    2. Install as editable: `pip install -e ./SpyglassWorkshop2026`
@@ -240,7 +240,7 @@ DataJoint's role as interface means YOU must keep track.
 
 <!-- stop -->
 
-Git commit history a link between a row and the code that made it.
+Git commit history is a link between a row and the code that made it.
 
 **Version-control your schema** alongside your data.
 
@@ -259,7 +259,7 @@ mkdir -p ~/spyglass_data
 # Linux:
 sudo mount -t nfs <TBD>:/tmp/spyglass_data ~/spyglass_data
 # macOS:
-sudo mount -t nfs -o resvport,ro <TBD>:/tmp/spyglass_data ~/spyglass_data
+sudo mount -t nfs -o resvport <TBD>:/tmp/spyglass_data ~/spyglass_data
 ```
 
 If on Windows, download from and unpack to your data directory.
@@ -285,7 +285,7 @@ The minimal fields needed to connect to the workshop database:
     "database.use_tls":  false,
     "custom": {
         "spyglass_dirs": {
-            "base": "<YOUR MOUNTED PATH>"
+            "base": "/home/YOU/spyglass_data",
         }
     }
 
@@ -301,31 +301,6 @@ The minimal fields needed to connect to the workshop database:
 import datajoint as dj
 dj.config.load("path/to/dj_local_conf.json")
 dj.conn().ping()   # raises an error if the connection fails
-```
-
-______________________________________________________________________
-
-# Database Connection
-
-## Explore Existing Spyglass Tables
-
-Spyglass pre-populates a shared `common` schema for every dataset.
-
-Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 1**.
-
-```python
-from spyglass.common import Subject, Session
-
-# Show the table definition
-Subject.describe()
-
-# Fetch all subjects
-subjects = Subject.fetch(as_dict=True)
-print(f"{len(subjects)} subjects in the database")
-
-# Restrict: & filters; join: * combines tables
-mice = Subject & {"species": "Mus musculus"}
-subj_sessions = Subject * Session
 ```
 
 ______________________________________________________________________
@@ -503,7 +478,7 @@ ______________________________________________________________________
 
 # Python Structure
 
-## Table Types: Diagram
+## Table Types: Overview
 
 ```text
                ┌────┐
@@ -527,13 +502,22 @@ ______________________________________________________________________
               └─────────┘
 ```
 
-*Tip:* `dj.Diagram(schema)` draws the actual dependency graph for any schema.
+*Tip:* `dj.Diagram(schema)` draws the dependency graph,
+[docs](https://docs.datajoint.com/how-to/read-diagrams/)
+
+```Python
+dj.Diagram(schema) - 1  # shows direct parents
+dj.Diagram(MyTable) - 2 # shows grandparents
+dj.Diagram(MyTable) + 1 # shows direct children
+dj.Diagram(MyTable) - 1 + 1 # shows children of parents (siblings)
+dj.Diagram(MyTable) + dj.Diagram(MyOtherTable) # shows relationships
+```
 
 ______________________________________________________________________
 
 # Python Structure
 
-## Table Types: Diagram
+## Table Types: With Downstream Schema
 
 ```text
                ┌────┐
@@ -595,7 +579,7 @@ ______________________________________________________________________
 
 # Python Structure
 
-## Declaration Limitations
+## Declaration Limitations (*time permitting*)
 
 <!-- stop -->
 
@@ -635,26 +619,14 @@ ______________________________________________________________________
 
 # Python Structure
 
-## Explore Existing Spyglass Tables
+## Explore Existing Tables
 
-Spyglass pre-populates a shared `common` schema for every dataset.
+Now that we have seen table declaration syntax, explore Spyglass tables using
+the same operators.
+
+Think of Spyglass like a graph. How can you get from A to B?
 
 Open `notebooks/02_datajoint_spyglass.ipynb` — **Section 2**.
-
-```python
-from spyglass.common import Subject, Session
-
-# Show the table definition
-Subject.describe()
-
-# Fetch all subjects
-subjects = Subject.fetch(as_dict=True)
-print(f"{len(subjects)} subjects in the database")
-
-# Restrict: & filters; join: * combines tables
-mice = Subject & {"species": "Mus musculus"}
-subj_sessions = Subject * Session
-```
 
 ______________________________________________________________________
 
@@ -711,9 +683,6 @@ subj_sessions = Subject * Session   # one row per (subject, session) pair
 alice_sessions = Subject * Session & "subject_id LIKE 'alice%'"
 ```
 
-Prefer strings for long-distance restrictions — they let you match a *group* of
-upstream entries rather than a single exact key.
-
 ______________________________________________________________________
 
 # Table Operators
@@ -736,6 +705,8 @@ lfp_results = LFPOutput() << "subject_id LIKE 'alice%'"
 # All upstream subjects linked to sessions after a cutoff date
 subjects = Subject() >> "session_date > '2024-01-01'"
 ```
+
+**NOTE:** May be fickle with dict restrictions.
 
 <!-- stop -->
 
@@ -772,32 +743,6 @@ st.MyAnalysis() << "subject_id LIKE 'alice%'"
 
 # 4. Long-distance restriction — downstream
 st.MyParams() >> "subject_id LIKE 'alice%'"
-```
-
-______________________________________________________________________
-
-# Exercise Time
-
-## Declare Your Own Schema
-
-Open `notebooks/02_datajoint_spyglass.ipynb`
-
-`schema_template.py` implements the patterns from this section. Importing it
-registers your personal schema in the database:
-
-```python
-import spyglass_workshop.schema_template as st
-
-# Visualize the dependency graph
-dj.Diagram(st.schema).draw()
-
-# Inspect each table's definition
-my_tables = [st.MyParams, st.MyAnalysisSelection, st.MyAnalysis]
-for table_cls in my_tables:
-    table_cls.describe()
-
-# Populate the Lookup table with default parameter sets
-st.MyParams.insert_default()
 ```
 
 ______________________________________________________________________
@@ -1074,7 +1019,7 @@ class MyAnalysis(SpyglassMixin, dj.Computed):
 
     def make(self, key):
         params = (MyParams & key).fetch1("params")
-        # Fetch from whichever part table holds this merge_id
+        # resolves merge_id → returns the Part table holding this result
         parent = LFPOutput().merge_get_parent(key)
         data = parent.fetch_nwb()[0]
         ...
@@ -1086,6 +1031,19 @@ class MyAnalysis(SpyglassMixin, dj.Computed):
 See
 [Merge table docs](https://lorenfranklab.github.io/spyglass/latest/api/utils/dj_merge_tables/)
 for the full `merge_*` method reference.
+
+______________________________________________________________________
+
+# Custom Pipelines
+
+## `schema_template.py`
+
+The workshop package ships with a ready-to-run minimal pipeline:
+`src/spyglass_workshop/schema_template.py`
+
+## Exercise Time
+
+Open `notebooks/02_datajoint_spyglass.ipynb` to *Section 4*
 
 ______________________________________________________________________
 
@@ -1116,6 +1074,8 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 # Common Errors *(time permitting)*
+
+<!-- PRESENTER: reference section — skip if short on time; slides remain in the repo for attendees -->
 
 - Debug mode
 - `IntegrityError`

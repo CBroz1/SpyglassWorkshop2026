@@ -27,6 +27,10 @@ jobs:
       - name: Install docs dependencies
         run: pip install ".[docs]"
       - uses: actions/configure-pages@v5
+      - name: Convert slides to pages
+        run: |
+          python docs/src/convert_slides.py docs/src/session1_tools.md
+          python docs/src/convert_slides.py docs/src/session2_datajoint.md
       - name: Build docs
         run: mkdocs build --config-file docs/mkdocs.yml
       - uses: actions/upload-pages-artifact@v3

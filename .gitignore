@@ -5,9 +5,14 @@ temp*
 dj_local_conf.json
 .claude/*
 
+## Generated docs (built by convert_slides.py before mkdocs)
+docs/src/*_page.md
+
 ## Workshop database
 database/.env
 database/data/
+database/init/02_data.sql
+database/SpyglassWorkshop2026Data.zip
 
 ## macOS
 ##

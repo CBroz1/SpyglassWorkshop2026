@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.0
+    image: datajoint/mysql:8.0
     container_name: spyglass-workshop-db
     restart: unless-stopped
     environment:
@@ -13,10 +13,7 @@ services:
       # Persistent data volume — survives container restarts.
       - workshop_data:/var/lib/mysql
     command: >
-      --default-authentication-plugin=mysql_native_password
       --activate_all_roles_on_login=ON
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test:
         [

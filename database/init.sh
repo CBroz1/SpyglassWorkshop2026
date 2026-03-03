@@ -97,7 +97,7 @@ case "$ACTION" in
             mkdir -p "$DATA_DIR"
             ln -sfn "$DATA_DIR" "$EXPORT_PATH"
             if ! grep -qF "$EXPORT_PATH" /etc/exports 2>/dev/null; then
-                echo "$EXPORT_PATH *(ro,sync,no_subtree_check)" | sudo tee -a /etc/exports
+                echo "$EXPORT_PATH *(rw,sync,no_subtree_check,all_squash,anonuid=$(id -u),anongid=$(id -g))" | sudo tee -a /etc/exports
             fi
             sudo exportfs -ra
             sudo systemctl start nfs-kernel-server
@@ -173,7 +173,7 @@ case "$ACTION" in
         IP="$(lan_ip)"
 
         if ! grep -qF "$EXPORT_PATH" /etc/exports 2>/dev/null; then
-            echo "$EXPORT_PATH *(ro,sync,no_subtree_check)" | sudo tee -a /etc/exports
+            echo "$EXPORT_PATH *(rw,sync,no_subtree_check,all_squash,anonuid=$(id -u),anongid=$(id -g))" | sudo tee -a /etc/exports
         fi
         sudo exportfs -ra
         sudo systemctl start nfs-kernel-server

@@ -103,7 +103,7 @@ elif sys.platform in ("linux", "darwin") and not FORCE_DOWNLOAD:
     MOUNT_POINT = str(Path.home() / "spyglass_data")
     if not _has_data(MOUNT_POINT):
         os.makedirs(MOUNT_POINT, exist_ok=True)
-        opts = "" if sys.platform == "linux" else "-o resvport,ro "
+        opts = "" if sys.platform == "linux" else "-o resvport "
         cmd = f"sudo mount -t nfs {opts}{NFS_PATH} {MOUNT_POINT}"
         # sudo may prompt for your password in the terminal where Jupyter runs.
         ret = os.system(cmd)
@@ -157,7 +157,7 @@ else:
 import datajoint as dj  # type: ignore
 
 HOST = "127.0.0.1"  # <-- replace with the instructor's IP address
-HOST = "192.168.1.19"
+
 MOUNT_POINT = str(Path.home() / "spyglass_data")
 config = {
     "database.host": HOST,
@@ -209,7 +209,7 @@ for s in sorted(schemas):
 # +
 from spyglass.common import Nwbfile, Session, Subject
 
-# See the table. Users with unzipped data can only access minirec
+# See the table. Users with unzipped data can only access minirec files
 Nwbfile()
 # -
 
@@ -228,6 +228,7 @@ pprint(Session.heading)
 # +
 from spyglass.lfp.lfp_merge import LFPOutput
 
+# tables that directly reference LFPOutput (its Part tables)
 LFPOutput.children(as_objects=True)
 # see also: parents, descendants, ancestors
 # -
@@ -239,11 +240,15 @@ LFPOutput.children(as_objects=True)
 # dj.Diagram supports operator overloading:
 # - diagram + N  adds N levels downstream  (tables that depend on this one)
 # - diagram - N  adds N levels upstream    (tables this one depends on)
+# - `diagram + 1 - 1` == `(diagram + 1) - 1` != `diagram + 0`
 # - diagram0 + diagram2  merges two diagrams
 
 # +
 from spyglass.common import common_filter as filter_schema
 from spyglass.lfp.v1.lfp import schema as lfp_schema
+
+# Star import used here so DataJoint can find all tables in the module
+# when building the diagram — ruff F403 suppressed intentionally.
 from spyglass.lfp.v1.lfp_artifact import *  # noqa: F403
 
 dj.Diagram(filter_schema) + dj.Diagram(lfp_schema)
@@ -252,6 +257,7 @@ dj.Diagram(filter_schema) + dj.Diagram(lfp_schema)
 # #### Exercise 2.1: Diagram
 #
 # Now, try drawing a diagram around a Merge table.
+#
 #
 # To find them in the codebase, search for `class .*Output\(` in Spyglass
 # with regular expressions on (`Alt+R`)
@@ -269,12 +275,14 @@ DecodingOutput, LFPOutput, PositionOutput, SpikeSortingOutput = (
 
 # <details><summary>Solution</summary>
 #
-# The suggestion to search is a bit of a red herring.
-# You can just add/subtract... but it does get unwieldy fast.
+# The codebase search works, but the `+`/`-` operators on `dj.Diagram` are
+# simpler — they expand the graph N levels up or downstream:
 #
 # ```python
 # dj.Di(PositionOutput.TrodesPosV1) - 1 + 1
 # ```
+#
+# Note that the diagram grows unwieldy fast with large schemas.
 #
 # </details>
 
@@ -349,12 +357,16 @@ my_query.fetch(format="frame").head()  # dataframe
 
 help(my_query.fetch)
 
-my_query.definition  # This will error if the query is not a table
+# Intentional error: `my_query` is a QueryExpression, not a base table.
+# QueryExpressions don't have a .definition attribute.
+# This demonstrates what you'll see if you try to inspect a join or restriction.
+my_query.definition  # This will raise AttributeError
 
-# Fetch Dataframe
+# #### Fetch dataframe and NWB *(optional — requires both DataJoint fetch and NWB knowledge)*
 #
 # Spyglass tables with foreign-key references to `AnalysisNwbfile` often store
-# dataframes.
+# dataframes. `fetch1_dataframe()` retrieves the stored dataframe for a single
+# row; `fetch_nwb()` returns the full NWB object(s) associated with the result.
 
 # +
 from spyglass.position.v1.position_trodes_position import TrodesPosV1
@@ -462,7 +474,7 @@ IntervalList()  # 1. YOUR CODE HERE
 # ```python
 # from spyglass.lfp import LFPElectrodeGroup
 #
-# LFPElectrode.aggr(LFPElectrodeGroup.LFPElectrode, xx="yy")
+# LFPElectrodeGroup.aggr(LFPElectrodeGroup.LFPElectrode(), xx="yy")
 # ```
 #
 # </details>
@@ -487,8 +499,10 @@ IntervalList()  # 1. YOUR CODE HERE
 # pipeline. Importing it registers all tables under your personal schema
 # prefix (`workshop_<username>`).
 #
-# **NOTE**: Existing code assumes no OS username overlap. If yours is not unique,
-# change the schema declaration before importing.
+# > **Warning:** The schema name is derived from your OS username. If two
+# > attendees share the same username, their tables will collide and produce
+# > confusing downstream errors. Change the schema declaration in
+# > `schema_template.py` before importing if your username is not unique.
 #
 # ### Exercise 4.1: Explore the schema template
 
@@ -554,6 +568,8 @@ st.MyAnalysis.summarize(first_key)
 # Insert a new set of Selection rows using the `'quick'` parameter set and
 # re-run `populate()`. Then compare the `total_result` values between the
 # two parameter sets.
+#
+# Available parameter sets: `st.MyParams()`
 
 # +
 # YOUR CODE HERE
@@ -564,6 +580,29 @@ st.MyAnalysis.summarize(first_key)
 
 # 3. Fetch total_result for both param sets and compare
 # -
+
+# <details><summary>Hint</summary>
+#
+# Use `MyAnalysisSelection.insert()` with `param_name='quick'`, then call
+# `MyAnalysis.populate()`. Fetch results with `st.MyAnalysis()` or
+# `.fetch("subject_id", "param_name", "total_result", as_dict=True)`.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# st.MyAnalysisSelection.insert(
+#     [{**k, "param_name": "quick"} for k in st.MySubject.fetch("KEY")],
+#     skip_duplicates=True,
+# )
+# st.MyAnalysis.populate(display_progress=True)
+#
+# # Compare results
+# st.MyAnalysis()
+# ```
+#
+# </details>
 
 # ### Exercise 4.4 - Revise the pipeline
 #
@@ -589,7 +628,10 @@ st.MyAnalysis.summarize(first_key)
 
 # import spyglass_workshop.YOUR_SCHEMA_NAME as yt
 # yt.MyParams.insert_default()
-# yt.MyAnalysisSelection.insert_all()   # or re-insert manually
+# yt.MyAnalysisSelection.insert(  # insert rows manually, e.g.:
+#     [{**k, "param_name": "default"} for k in yt.MySubject.fetch("KEY")],
+#     skip_duplicates=True,
+# )
 # yt.MyAnalysis.populate(display_progress=True)
 # yt.MyAnalysis()
 # -
@@ -607,3 +649,405 @@ st.MyAnalysis.summarize(first_key)
 #
 # See [Spyglass docs](https://lorenfranklab.github.io/spyglass/) for the
 # full API reference and pipeline examples.
+
+# ---
+
+# ## Advanced Exercises *(homework)*
+#
+# These exercises reinforce the session material using the live Spyglass demo
+# database. They are designed to be run **after the workshop** in one of two
+# environments:
+#
+# | Environment | How to open |
+# | :---------- | :---------- |
+# | **Demo JupyterHub** | [Launch spyglass-demo on hhmi.2i2c.cloud](https://spyglass.hhmi.2i2c.cloud/hub/user-redirect/git-pull?repo=https%3A%2F%2Fgithub.com%2FLorenFrankLab%2Fspyglass-demo&urlpath=lab%2Ftree%2Fspyglass-demo%2Fnotebooks%2F02_Insert_Data.ipynb&branch=main) |
+# | **GitHub Codespace** | Re-open this repo's Codespace |
+
+# ### Exercise 5.1 — Operator drills on real data *(~15 min)*
+#
+# The five queries below use the operators from Section 3. Each has a blank
+# `# YOUR CODE HERE` block — fill it in, run the cell, and compare to the
+# solution.
+#
+# **Imports** — run this cell first:
+
+import datajoint as dj
+from spyglass.common import (
+    Electrode,
+    ElectrodeGroup,
+    IntervalList,
+    Nwbfile,
+    Session,
+    Subject,
+)
+from spyglass.spikesorting.v1.curation import CurationV1
+
+# +
+# 1. How many sessions are in the database? How many NWB files?
+
+# YOUR CODE HERE
+# -
+
+# <details><summary>Hint</summary>
+#
+# `len(Table())` counts the rows in a table.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# print(len(Session()), "sessions")
+# print(len(Nwbfile()), "NWB files")
+# ```
+#
+# </details>
+
+# +
+# 2. Which subjects have more than one session?
+
+# YOUR CODE HERE
+# -
+
+# <details><summary>Hint</summary>
+#
+# Use `Subject.aggr(Session, n="count(*)")` to count sessions per subject,
+# then restrict the result with `& "n > 1"`.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# Subject.aggr(Session, n="count(*)") & "n > 1"
+# ```
+#
+# </details>
+
+# +
+# 3. How many electrodes does each electrode group contain?
+
+# YOUR CODE HERE
+# -
+
+# <details><summary>Hint</summary>
+#
+# This builds directly on Exercise 3.3. Use `ElectrodeGroup.aggr(Electrode, ...)`.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# ElectrodeGroup.aggr(Electrode, n_electrodes="count(*)")
+# ```
+#
+# </details>
+
+# +
+# 4. How many interval lists have names that start with "pos"?
+
+# YOUR CODE HERE
+# -
+
+# <details><summary>Hint</summary>
+#
+# Use a SQL `LIKE` pattern with a `%` wildcard:
+# `IntervalList & 'interval_list_name LIKE "pos%"'`
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# pos_intervals = IntervalList & 'interval_list_name LIKE "pos%"'
+# print(len(pos_intervals), "pos intervals")
+# ```
+#
+# </details>
+
+# +
+# 5. Find all CurationV1 results whose session happened after 2024-01-01
+
+# YOUR CODE HERE
+# -
+
+# <details><summary>Hint</summary>
+#
+# Use `<<` for a long-distance restriction through related tables:
+# `CurationV1() << 'subject_id LIKE "%mango%"'`
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# CurationV1() << 'subject_id LIKE "%mango%"'
+# # If mango is not a subject, substitute any name from: Subject.fetch("subject_id")
+# ```
+#
+# </details>
+
+# ### Exercise 5.2 — Trace a result through a Merge table *(~20 min)*
+#
+# `PositionOutput` is a Merge table that unifies every position-tracking
+# pipeline (Trodes, DLC, etc.) under a single interface. The `merge_*`
+# methods let you inspect, restrict, and fetch without knowing which
+# Part table holds any given result.
+#
+# **Goal:** start from the Merge table and fetch a position dataframe,
+# then compute the duration of the tracked interval.
+
+# +
+from spyglass.position.position_merge import PositionOutput
+
+# Step 1: How many results are in the merge table?
+#         Which Part tables have entries?
+
+PositionOutput._merge_repr()
+# -
+
+PositionOutput.parts(
+    as_objects=True
+)  # tables that directly reference PositionOutput (its Part tables)
+
+# +
+# Step 2: Restrict the merge table to a single NWB file.
+#         Hint: use PositionOutput.merge_restrict(restriction_dict)
+#         and pick the nwb_file_name from Nwbfile.fetch("nwb_file_name")[0]
+
+# `file_like` is a help that replaces `nwb_file_name LIKE '%mini%'`
+
+nwb_file = Nwbfile().file_like("mini").fetch("nwb_file_name")[0]
+print("Using:", nwb_file)
+
+# YOUR CODE HERE: restrict PositionOutput to this NWB file
+
+# What would it look like to run a join for this restriction?
+# -
+
+# <details><summary>Hint</summary>
+#
+# For a plain join you could also write
+# `PositionOutput * (Nwbfile & {"nwb_file_name": nwb_file})`, but
+# `merge_restrict` handles the Part-table routing for you.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# restricted = PositionOutput.merge_restrict({"nwb_file_name": nwb_file})
+# print(len(restricted), "results for", nwb_file)
+# ```
+#
+# </details>
+
+Nwbfile.file_like("mini")
+
+# +
+# Step 3: Pick one result key and resolve which Part table holds it.
+#         merge_get_parent returns the actual Part table restricted to this key.
+
+key = PositionOutput.fetch("KEY", limit=1)[0]
+parent = PositionOutput().merge_get_parent_class(key)  # resolves merge_id → Part table
+
+print("Part table entry:")
+parent
+
+# +
+# Step 4: Fetch the position dataframe from the parent table.
+#         How long (in seconds) is the tracked interval?
+
+# YOUR CODE HERE: call parent.fetch1_dataframe() and compute duration
+# -
+
+# <details><summary>Hint</summary>
+#
+# `parent.fetch1_dataframe()` returns a pandas DataFrame indexed by time.
+#
+# But it only works for a query with one result
+#
+# The duration is `df.index[-1] - df.index[0]`.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# df = (parent & dj.Top()).fetch1_dataframe()
+# duration = df.index[-1] - df.index[0]
+# print(f"Tracked interval: {duration:.2f} s  ({len(df)} samples)")
+# ```
+#
+# </details>
+
+# +
+# Step 5: Plot the x/y position trajectory for the full interval.
+#         Label the axes and add a title that includes the NWB file name.
+
+import matplotlib.pyplot as plt
+
+# YOUR CODE HERE
+# -
+
+# <details><summary>Hint</summary>
+#
+# Use `df["position_x"]` and `df["position_y"]` as the x and y axes.
+# `ax.set_aspect("equal")` keeps the trajectory proportional.
+#
+# </details>
+
+# <details><summary>Solution</summary>
+#
+# ```python
+# fig, ax = plt.subplots(figsize=(5, 5))
+# ax.plot(df["position_x"], df["position_y"], lw=0.5, alpha=0.7, color="steelblue")
+# ax.set_xlabel("x position (cm)")
+# ax.set_ylabel("y position (cm)")
+# ax.set_title(nwb_file)
+# ax.set_aspect("equal")
+# plt.tight_layout()
+# plt.show()
+# ```
+#
+# </details>
+
+# > **If `PositionOutput` is empty:** the demo database may not have position
+# > results pre-computed. Open the demo notebook
+# > `20_Position_Trodes.ipynb` in the spyglass-demo repo, run it through the
+# > `TrodesPosV1.populate()` call, then return here.
+
+# ### Exercise 5.3 — Declare a Computed table against live data *(~30 min)*
+#
+# In Section 4 you populated a pipeline that used mock subjects. Now you will
+# declare a `SessionSummary` table that queries real `IntervalList` data using
+# the `Interval` utility class — a set-algebra wrapper over Spyglass
+# valid-times arrays.
+#
+# **Key `Interval` methods used here:**
+#
+# | Method | What it does |
+# | :----- | :----------- |
+# | `Interval(array)` | Wrap an Nx2 numpy array of `[start, end]` pairs |
+# | `.consolidate()` | Merge any overlapping intervals |
+# | `.by_length(min_length)` | Keep only intervals at least that long |
+# | `a.intersect(b)` | Return time covered by **both** `a` and `b` |
+#
+# **Schema:** `Session` → `SessionSummary`
+#
+# | Field | Type | Description |
+# | :---- | :--- | :---------- |
+# | `n_intervals` | `int` | Total `IntervalList` entries for this session |
+# | `n_long_intervals` | `int` | Entries longer than 0.5 s (after consolidation) |
+# | `total_valid_s` | `float` | Total valid time across all intervals (seconds) |
+#
+# **Steps:**
+# 1. Fill in `make` — use `Interval` to consolidate, filter, and sum durations.
+# 2. Run `SessionSummary.populate(display_progress=True)`.
+# 3. Inspect the results with `SessionSummary()`.
+# 4. *(Extension)* In a new cell, use `intersect()` to find the time covered
+#    by **both** the position valid-times and the raw recording epoch.
+#    Compare the durations of each component and the overlap.
+
+# +
+import os
+
+import datajoint as dj
+import numpy as np
+from spyglass.common import IntervalList, Session
+from spyglass.common.common_interval import Interval
+from spyglass.utils import SpyglassMixin
+
+schema = dj.schema(f"workshop_{os.getenv('USER', 'demo')}")
+
+
+@schema
+class SessionSummary(SpyglassMixin, dj.Computed):
+    """Per-session interval summary using the Interval utility class."""
+
+    definition = """
+    -> Session
+    ---
+    n_intervals       : int    # total IntervalList entries for this session
+    n_long_intervals  : int    # entries with duration > 0.5 s (after consolidation)
+    total_valid_s     : float  # total valid time across all intervals (seconds)
+    """
+
+    def make(self, key):
+        # YOUR CODE HERE
+        # Steps:
+        # 1. Fetch:  all_vt = (IntervalList & key).fetch("valid_times")
+        # 2. Build:  all_valid = Interval(np.concatenate(all_vt)).consolidate()
+        # 3. Filter: long_valid = all_valid.by_length(min_length=0.5)
+        # 4. Sum:    total_s = sum(end - start for start, end in all_valid)
+        # 5. Insert: self.insert1({**key, "n_intervals": ..., ...})
+        pass
+
+
+# Preview: which sessions will be processed?
+print(f"Sessions to populate: {len(Session() - SessionSummary())}")
+SessionSummary.populate(display_progress=True)
+# -
+
+# Inspect the results as a DataFrame
+SessionSummary().fetch(format="frame")
+
+# <details><summary>Solution — make method</summary>
+#
+# ```python
+# def make(self, key):
+#     all_vt = (IntervalList & key).fetch("valid_times")
+#     all_valid = Interval(np.concatenate(all_vt)).consolidate()
+#     long_valid = all_valid.by_length(min_length=0.5)
+#     total_s = float(sum(end - start for start, end in all_valid))
+#     self.insert1(
+#         {
+#             **key,
+#             "n_intervals": len(IntervalList & key),
+#             "n_long_intervals": len(long_valid),
+#             "total_valid_s": total_s,
+#         }
+#     )
+# ```
+#
+# </details>
+#
+# <details><summary>Extension — intersect two interval lists</summary>
+#
+# Use `intersect()` to find the overlap between position valid-times and the
+# first session epoch. Run this in a new cell after `SessionSummary` is
+# populated.
+#
+# ```python
+# import numpy as np
+# from spyglass.common import IntervalList, Session
+# from spyglass.common.common_interval import Interval
+#
+# key = Session.fetch1("KEY")
+#
+# # All position valid-time intervals
+# pos_vt = np.concatenate(
+#     (IntervalList & key & 'interval_list_name LIKE "pos%"').fetch("valid_times")
+# )
+# # The raw recording epoch
+# epoch_vt = (
+#     IntervalList & key & {"interval_list_name": "01_s1"}
+# ).fetch1("valid_times")
+#
+# pos = Interval(pos_vt)
+# epoch = Interval(epoch_vt)
+# overlap = pos.intersect(epoch)
+#
+# print(f"Position intervals : {len(pos):3d}  {sum(e-s for s,e in pos):.2f} s total")
+# print(f"Epoch interval     : {len(epoch):3d}  {sum(e-s for s,e in epoch):.2f} s total")
+# print(f"Overlap            : {len(overlap):3d}  {sum(e-s for s,e in overlap):.2f} s total")
+# ```
+#
+# </details>
+#
+# > **Going further:** see the full Spyglass tutorials at
+# > `spyglass/notebooks`:
+# >
+# > - start with **LFP** (notebook 30) and **Ripple Detection** (notebook 32)
+# > for two complete analysis pipelines

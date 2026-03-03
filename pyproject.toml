@@ -63,6 +63,9 @@ lint.ignore = [
   "E402", # unused import, which DataJoint tables require
   "F401", # import not at top of file, which is common in notebooks
 ]
+lint.per-file-ignores."notebooks/*ipynb" = [
+  "F811", # redefinition of name — cells routinely re-import across exercises
+]
 lint.isort.known-first-party = [ "src", "tests" ]
 
 [tool.pytest.ini_options]
@@ -78,7 +81,7 @@ show_missing = true
 [tool.coverage.run]
 command_line = "-m pytest"
 source_pkgs = [ "spyglass_workshop", "tests" ]
-omit = [ "*/schema_template.py" ]  # requires a live database connection
+omit = [ "*/schema_template.py" ]              # requires a live database connection
 
 [tool.coverage.paths]
 spyglass_workshop = [ "src/spyglass_workshop" ]

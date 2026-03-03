@@ -19,8 +19,8 @@ markdown_extensions:
       toc_depth: 3
 nav:
   - "Home": "index.md"
-  - "Session 1: Tools": "session1_tools.md"
-  - "Session 2: DataJoint & Spyglass": "session2_datajoint.md"
+  - "Session 1: Tools": "session1_page.md"
+  - "Session 2: DataJoint & Spyglass": "session2_page.md"
   - "API Reference": api/   # populated by gen-files + literate-nav
 plugins:
   - search

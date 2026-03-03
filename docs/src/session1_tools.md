@@ -1,9 +1,9 @@
 ---
-title: "Session 2: Spyglass & DataJoint Infrastructure"
+title: 'Session 1: Tools for Scientific Computing'
 author: Chris Broz
 date: 03/2026
 styles:
-    style: dracula
+  style: dracula
 ---
 
 # Calibration Slide
@@ -108,10 +108,10 @@ ______________________________________________________________________
 code /path/to/SpyglassWorkshop2026
 ```
 
-1. Accept the prompt to install recommended extensions (from
+2. Accept the prompt to install recommended extensions (from
    `.vscode/extensions.json`)
 
-2. Select the conda environment as your Python interpreter:
+3. Select the conda environment as your Python interpreter:
 
 ```text
 Ctrl+Shift+P  →  Python: Select Interpreter
@@ -130,7 +130,7 @@ ______________________________________________________________________
 
 [Shortcuts cheatsheet](https://quickref.me/vscode.html)
 
-# VS Code
+<!-- stop -->
 
 ## Repository structure
 
@@ -150,7 +150,6 @@ SpyglassWorkshop2026/
 ├── src/spyglass_workshop/   # library source code (importable package)
 ├── notebooks/               # Jupyter notebooks for demos and exercises
 ├── tests/                   # pytest test suite
-├── src/                     # source code for this repository
 └── docs/                    # MkDocs documentation source
 ```
 
@@ -187,9 +186,7 @@ They are *less* well-suited for:
 - Production code (use `.py` modules instead)
 - Large collaborations (merge conflicts are painful)
 
-______________________________________________________________________
-
-# Jupyter
+<!-- stop -->
 
 ## Cell types
 
@@ -310,7 +307,7 @@ ______________________________________________________________________
 
 ## Forks and Pull Requests
 
-1. **Fork** individual's copy of a repository.
+1. **Fork** your personal copy of a repository.
 2. **Clone** downloads your fork to your laptop.
 3. Make changes on a branch.
 4. **Push** your branch to your fork.
@@ -333,6 +330,8 @@ branches and conflicts, including the `Source Control` tab in VSCode
 
 ______________________________________________________________________
 
+# GitHub
+
 ## Jupytext — notebooks in version control
 
 `.ipynb` files store outputs and metadata alongside source, making `git diff`
@@ -350,6 +349,17 @@ ruff format notebooks/py_scripts/
 
 The `# %%` markers in the `.py` files are understood by VS Code and JupyterLab —
 run them interactively or as a plain script.
+
+This means your notebook source is just another file in the repo — it travels
+through the fork → branch → commit → PR workflow alongside your Python modules.
+
+______________________________________________________________________
+
+# GitHub
+
+Now that we've covered the basics, let's try it out!
+
+See `/notebooks/01_tools_exercise.ipynb` **Section 1**
 
 ______________________________________________________________________
 
@@ -473,8 +483,6 @@ pre-commit run --all-files   # run manually
 If a hook fails, the commit is blocked and the file is fixed. Re-stage and try
 again.
 
-<!-- stop -->
-
 This means bad style never reaches the repository... unless you intentionally
 bypass it with `git commit --no-verify`.
 
@@ -482,7 +490,7 @@ bypass it with `git commit --no-verify`.
 
 ## Exercises
 
-Try out a few exercises in notebook 1, then stop at 'Readable code'
+Try out exercises in **Sections 2 and 3** of the notebook.
 
 ______________________________________________________________________
 
@@ -496,15 +504,58 @@ once. Extract pieces into the smallest chunk that deserves a name:
 | Level                   | Mechanism                    |
 | :---------------------- | :--------------------------- |
 | Conceptual group        | Blank line (paragraph break) |
-| Conditional value       | Ternary or early assignment  |
+| Conditional value       | Early assignment             |
 | Reusable step           | Method on a class            |
 | Shared within a module  | Helper function              |
 | Shared across a project | Utility module               |
 
-<!-- stop -->
-
 A well-named helper turns code you have to *read* into a word you already
 *know*.
+
+______________________________________________________________________
+
+# Code Quality
+
+## Nesting
+
+Deep nesting is a sign of doing too much in one function.
+
+```python
+def nested(input):
+    if input > 0
+        do_something()
+        if input < 10:
+            do_something_else()
+```
+
+Refactor to use guard clauses and named helpers:
+
+```python
+def refactored(input):
+    if input <= 0:
+        return
+    do_something()
+    if input >= 10:
+        return
+    do_something_else()
+```
+
+<!-- stop -->
+
+Or, even better:
+
+```python
+def new_refactored(input):
+    if input <= 0 or input >= 10:
+        return
+    do_something(also_else=bool(input < 10))
+```
+
+______________________________________________________________________
+
+# Code quality
+
+Try out exercises in **Section 4** of the notebook.
 
 ______________________________________________________________________
 
@@ -573,7 +624,7 @@ Console** lets you evaluate expressions live.
 
 <!-- stop -->
 
-Let's try it out in notebook 1!
+Let's try it out in **Section 5** of the notebook!
 
 ______________________________________________________________________
 
