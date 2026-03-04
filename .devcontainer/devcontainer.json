@@ -20,6 +20,18 @@
   // Start MySQL, set root password, write workshop config, create users.
   "postCreateCommand": "sudo service mysql start && sudo mysql -e \"ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'tutorial'; FLUSH PRIVILEGES;\" && bash .devcontainer/setup-db.sh",
 
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/home/vscode/.venvs/spyglass/bin/python"
+      }
+    }
+  },
+
   "forwardPorts": [3306],
   "portsAttributes": {
     "3306": {

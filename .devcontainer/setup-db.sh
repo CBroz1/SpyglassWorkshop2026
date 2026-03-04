@@ -38,7 +38,28 @@ sudo service mysql restart
 mysql -u root -p"${ROOT_PASSWORD}" < "$INIT_SQL"
 
 # ---------------------------------------------------------------------------
-# 3. Download workshop data archive
+# 3. Set up Python environment and Jupyter kernel
+# ---------------------------------------------------------------------------
+
+VENV_DIR="$HOME/.venvs/spyglass"
+
+echo "Creating Python virtual environment at ${VENV_DIR} ..."
+python3.12 -m venv "$VENV_DIR"
+
+echo "Installing workshop package and dependencies (this may take a few minutes) ..."
+"$VENV_DIR/bin/pip" install --quiet --upgrade pip
+"$VENV_DIR/bin/pip" install --quiet ipykernel -e "$REPO_ROOT"
+
+echo "Registering Jupyter kernel ..."
+"$VENV_DIR/bin/python" -m ipykernel install \
+    --user \
+    --name spyglass \
+    --display-name "Spyglass Workshop"
+
+echo "Python environment ready at ${VENV_DIR}"
+
+# ---------------------------------------------------------------------------
+# 4. Download workshop data archive
 # ---------------------------------------------------------------------------
 
 DATA_DIR="$HOME/spyglass_data"
@@ -53,7 +74,7 @@ rm /tmp/spyglass_data.zip
 echo "Workshop data ready at ${DATA_DIR}"
 
 # ---------------------------------------------------------------------------
-# 4. Done
+# 5. Done
 # ---------------------------------------------------------------------------
 
 echo ""
