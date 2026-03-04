@@ -437,13 +437,13 @@ ______________________________________________________________________
 
 ## Table Syntax: DataJoint Table Tiers
 
-| Tier          | DB prefix    | Populated by                   | Use case                       |
-| :------------ | :----------- | :----------------------------- | :----------------------------- |
-| `dj.Manual`   | *(none)*     | A person, via `insert`         | Subjects, sessions, selections |
-| `dj.Lookup`   | `#`          | Declared in `contents`         | Parameter sets, lookup values  |
-| `dj.Imported` | `_`          | `make`, reading external files | NWB ingestion                  |
-| `dj.Computed` | `__`         | `make`, from upstream tables   | Analysis results               |
-| `dj.Part`     | `<master>__` | Master table's `make`          | One-to-many sub-records        |
+| Tier          | prefix    | Populated by           | Use case                |
+| :------------ | :-------- | :--------------------- | :---------------------- |
+| `dj.Manual`   | *(none)*  | A person, via `insert` | Subjects, selections    |
+| `dj.Lookup`   | `#`       | Declared in `contents` | Paramsets, lookup vals  |
+| `dj.Imported` | `_`       | `make`, reading files  | NWB ingestion           |
+| `dj.Computed` | `__`      | `make`, from upstream  | Analysis results        |
+| `dj.Part`     | `<tbl>__` | Any of the above       | One-to-many sub-records |
 
 Note: `Imported` vs `Computed` is an unenforced convention.
 
@@ -583,12 +583,12 @@ ______________________________________________________________________
 
 <!-- stop -->
 
-**Naming**
+### Naming
 
 - Class names must be `CamelCase`; attribute names `snake_case` only
 - Attribute names must be lowercase, no spaces or hyphens
 
-**Primary key**
+### Primary key
 
 - Every table must have a primary key
 - Primary key fields cannot be nullable or have default values (except
@@ -597,19 +597,19 @@ ______________________________________________________________________
 
 <!-- stop -->
 
-**Foreign keys**
+### Foreign keys
 
 - Must reference an existing base table — not a query expression
 - Only `[nullable]` and `[unique]` modifiers are allowed
 
-**Part tables**
+### Part tables
 
 - Part tables cannot be nested (no parts of parts)
 - Parts cannot be deleted or dropped directly — delete from the master
 
 <!-- stop -->
 
-**After declaration**
+### After declaration
 
 - Primary keys, foreign keys, and indexes **cannot be altered** — you must
   delete all downstream data and redeclare the table
@@ -645,15 +645,15 @@ ______________________________________________________________________
 
 DataJoint provides Python operators for querying across tables.
 
-| Operator         | What it does                                                          |
-| :--------------- | :-------------------------------------------------------------------- |
-| `A & r`          | **Restrict** — filter rows of `A` by a dict, string, or another table |
-| `A * B`          | **Join** — combine columns from `A` and `B` where their keys match    |
-| `A - B`          | **Minus** — rows of `A` whose keys do not appear in `B`               |
-| `A.proj()`       | **Project** — select or rename specific columns                       |
-| `A.insert()`     | **Insert** — add new rows to `A`                                      |
-| `A.fetch()`      | **Fetch** — query results as Python objects                           |
-| `A.aggr(B, ...)` | **Aggregate** — group by `A` and compute stats on `B`                 |
+| Operator         | What it does                                               |
+| :--------------- | :--------------------------------------------------------- |
+| `A & r`          | **Restrict** — filter `A` rows by dict, string, or table   |
+| `A * B`          | **Join** — combine columns in `A` and `B` where keys match |
+| `A - B`          | **Minus** — rows of `A` whose keys do not appear in `B`    |
+| `A.proj()`       | **Project** — select or rename specific columns            |
+| `A.insert()`     | **Insert** — add new rows to `A`                           |
+| `A.fetch()`      | **Fetch** — query results as Python objects                |
+| `A.aggr(B, ...)` | **Aggregate** — group by `A` and compute stats on `B`      |
 
 ______________________________________________________________________
 
@@ -693,10 +693,10 @@ Standard `&` requires the restriction field to exist in the table's own primary
 key. `SpyglassMixin` adds operators that walk the dependency graph to find a
 compatible ancestor or descendant:
 
-| Operator | Direction                           | Reads as                           |
-| :------- | :---------------------------------- | :--------------------------------- |
-| `A << r` | **Upstream** — toward root tables   | "restrict A by an ancestor field"  |
-| `A >> r` | **Downstream** — toward leaf tables | "restrict A by a descendant field" |
+| Operator | Direction                      | Reads as                         |
+| :------- | :----------------------------- | :------------------------------- |
+| `A << r` | **Upstream** — toward roots    | "restrict A by ancestor field"   |
+| `A >> r` | **Downstream** — toward leaves | "restrict A by descendant field" |
 
 ```python
 # All LFP results for subjects whose ID starts with "alice"
@@ -939,10 +939,10 @@ ______________________________________________________________________
 
 Primary vs Secondary and Foreign Key vs Field are orthogonal concepts:
 
-|             | Primary (unique identifier) | Secondary (extra data)              |
-| :---------- | :-------------------------- | :---------------------------------- |
-| **Foreign** | Another processing step     | Associated resource (e.g. NWB file) |
-| **Native**  | Arbitrary unique ID         | Arbitrary data field                |
+|             | Primary (unique identifier) | Secondary (extra data)          |
+| :---------- | :-------------------------- | :------------------------------ |
+| **Foreign** | Another processing step     | Associated resource (e.g. file) |
+| **Native**  | Arbitrary unique ID         | Arbitrary data field            |
 
 <!-- stop -->
 
@@ -1074,8 +1074,6 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 # Common Errors *(time permitting)*
-
-<!-- PRESENTER: reference section — skip if short on time; slides remain in the repo for attendees -->
 
 - Debug mode
 - `IntegrityError`

@@ -102,21 +102,20 @@ ______________________________________________________________________
 
 ## Getting started
 
-1. Open VS Code, then open the workshop folder:
+1. Open this workshop folder in VSCode:
 
-```bash
-code /path/to/SpyglassWorkshop2026
-```
+   ```bash
+   code /path/to/SpyglassWorkshop2026
+   ```
 
 2. Accept the prompt to install recommended extensions (from
    `.vscode/extensions.json`)
 
 3. Select the conda environment as your Python interpreter:
 
-```text
-Ctrl+Shift+P  →  Python: Select Interpreter
-→  spyglass
-```
+   ```text
+   Ctrl+Shift+P  →  Python: Select Interpreter →  spyglass
+   ```
 
 ______________________________________________________________________
 
@@ -190,11 +189,10 @@ They are *less* well-suited for:
 
 ## Cell types
 
-| Type         | Purpose                                          |
-| :----------- | :----------------------------------------------- |
-| **Code**     | Executable Python. `Shift+Enter` to run.         |
-| **Markdown** | Formatted text, equations, images.               |
-| **Raw**      | Passed through unmodified (e.g., for nbconvert). |
+| Type         | Purpose                                  |
+| :----------- | :--------------------------------------- |
+| **Code**     | Executable Python. `Shift+Enter` to run. |
+| **Markdown** | Formatted text, equations, images.       |
 
 [Markdown Cheatsheet](https://www.markdownguide.org/cheat-sheet/)
 
@@ -315,6 +313,10 @@ ______________________________________________________________________
 
 <!-- stop -->
 
+Let's look through the UI!
+
+<!--stop-->
+
 ## Git Commits
 
 Commits happen in 4 phases:
@@ -324,9 +326,11 @@ Commits happen in 4 phases:
 3. Commit: Saving staged changes as a commit `git commit -m <message>`
 4. Pushing: Pushing the commit history to a remote branch `git push origin main`
 
-There are plenty of tools to help manage this process, as well as diverging
-branches and conflicts, including the `Source Control` tab in VSCode
-(`Ctrl+Shift+G`).
+Various tools can manage this process (and conflicts), including in VSCode.
+
+<!--stop-->
+
+We'll hop over there now
 
 ______________________________________________________________________
 
@@ -335,8 +339,9 @@ ______________________________________________________________________
 ## Jupytext — notebooks in version control
 
 `.ipynb` files store outputs and metadata alongside source, making `git diff`
-noisy. `jupytext` converts a notebook to a plain Python script — clean diffs, no
-JSON, no embedded images.
+noisy.
+
+`jupytext` converts a notebook to a plain Python script
 
 ```bash
 # Convert all notebooks to lightweight Python scripts
@@ -346,12 +351,6 @@ jupytext --to py:light notebooks/*.ipynb
 mv notebooks/*.py notebooks/py_scripts/
 ruff format notebooks/py_scripts/
 ```
-
-The `# %%` markers in the `.py` files are understood by VS Code and JupyterLab —
-run them interactively or as a plain script.
-
-This means your notebook source is just another file in the repo — it travels
-through the fork → branch → commit → PR workflow alongside your Python modules.
 
 ______________________________________________________________________
 
@@ -451,8 +450,6 @@ It catches issues like:
 - `UP` — upgrades to modern Python syntax
 - `I` — import ordering (replaces `isort`)
 
-<!-- stop -->
-
 Try writing `a='1'` and saving — `ruff` will change it to `a = '1'`
 automatically.
 
@@ -476,15 +473,16 @@ repos:
 <!-- stop -->
 
 ```bash
-pre-commit install           # one-time setup (already done)
+pre-commit install           # one-time setup
 pre-commit run --all-files   # run manually
 ```
 
 If a hook fails, the commit is blocked and the file is fixed. Re-stage and try
 again.
 
-This means bad style never reaches the repository... unless you intentionally
-bypass it with `git commit --no-verify`.
+This means bad style never reaches the repository.
+
+... unless you intentionally bypass it with `git commit --no-verify`
 
 <!-- stop -->
 
@@ -499,7 +497,9 @@ ______________________________________________________________________
 ## Atomizing
 
 Working memory is limited — long functions force you to hold too much in mind at
-once. Extract pieces into the smallest chunk that deserves a name:
+once.
+
+Extract pieces into the smallest chunk that deserves a name:
 
 | Level                   | Mechanism                    |
 | :---------------------- | :--------------------------- |
@@ -594,16 +594,19 @@ ______________________________________________________________________
 
 # Debugging
 
-## Manual breakpoints
+## Pausing execution
 
-Insert `breakpoint()` anywhere in your code to pause execution there.
+Insert `breakpoint()` anywhere in your code
 
 <!-- stop -->
 
-## Debugging in IPython
+## Two approaches
 
-If you hit an error either in a notebook or an ipython session, you can run
-`%debug` in a new cell to enter the post-mortem debugger.
+<!-- stop -->
+
+### Debugging in IPython Terminal
+
+After an error, `%debug` to enter a post-mortem debugger.
 
 ```python
 %debug
@@ -611,7 +614,7 @@ If you hit an error either in a notebook or an ipython session, you can run
 
 <!-- stop -->
 
-## Debugging in VS Code
+### Debugging in VS Code
 
 1. Either...
    - Script: **Run and Debug** sidebar (`Ctrl+Shift+D`)

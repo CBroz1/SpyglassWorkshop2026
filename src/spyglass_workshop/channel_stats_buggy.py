@@ -3,34 +3,6 @@
 
 Contains three intentional bugs, each requiring a different debugger
 technique.  Fix them in order — each fix reveals the next problem.
-
-Bug 1 — TypeError from a builtin  (fires on every channel immediately)
-    ``_mean`` references ``len`` as a value instead of calling
-    ``len(values)``.  Python divides by the built-in function object
-    rather than by a number, raising ``TypeError`` before any channel
-    is processed.  The fix is a single pair of parentheses.
-
-Bug 2 — missing guard clause  (fires after Bug 1 is fixed)
-    ``_z_scores`` divides every sample by ``sigma`` without first
-    checking whether ``sigma`` is zero.  Because Bug 3 makes
-    ``_variance`` return ``0.0`` for every channel, all channels have
-    ``sigma == 0`` until that is also fixed.  Inspect ``sigma`` in the
-    **Variables** panel to confirm it is ``0.0``, then add an
-    early-return guard.
-
-Bug 3 — loop accumulation error  (produces wrong values after Bug 2 is fixed)
-    ``_variance`` uses ``sq_devs + [...]`` inside the loop.  The ``+``
-    operator creates a new list on each iteration but does not update
-    ``sq_devs``, which stays ``[]`` for the entire loop.
-    ``sum([]) / n`` is always ``0.0``, so every channel reports
-    ``std == 0.0``.  Set a **breakpoint** on the ``sq_devs +`` line,
-    step through the loop, and watch ``sq_devs`` in the **Variables**
-    panel — it never grows.  Fix with ``sq_devs.append(...)`` or
-    ``sq_devs += [...]``.
-
-Run the test suite to verify all three fixes::
-
-    pytest tests/test_channel_stats_buggy.py -v
 """
 
 # NOTE: To hide indented text in VS Code, click the arrows. Or for docstrings:
@@ -134,7 +106,7 @@ def _mean(values):
         If *values* is empty (after Bug 1 is fixed).
     """
     # return sum(values) / len
-    # Bug 1: should be len(values)
+    # Bug 1 Fix: should be len(values)
     return sum(values) / len(values)
 
 
@@ -209,6 +181,9 @@ def _variance(values, mu):
     for v in values:
         sq_devs + [_sq_dev(v, mu)]  # Bug 3: new list — sq_devs unchanged
         # print(f"v={v:.2f}, mu={mu:.2f}, sq_dev={_sq_dev(v, mu):.4f}, ")
+        # Bug 3 Fix: Append to the running list
+        # sq_devs.append(_sq_dev(v, mu))
+    # breakpoint()
     return sum(sq_devs) / n
 
 
@@ -296,7 +271,7 @@ def _z_scores(signal, mu, sigma):
     population standard deviation — provided *mu* and *sigma* are derived
     from the same *signal*.
     """
-    # Bug 2: missing guard clause for sigma == 0
+    # Bug 2 Fix: missing guard clause for sigma == 0
     if sigma == 0.0:
         return [0.0] * len(signal)
     return [(v - mu) / sigma for v in signal]

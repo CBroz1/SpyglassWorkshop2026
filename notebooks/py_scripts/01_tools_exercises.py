@@ -7,7 +7,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: spy
+#     display_name: spyglass
 #     language: python
 #     name: python3
 # ---
@@ -62,10 +62,10 @@ print(a)
 #
 # | Key | Action |
 # | :-- | :----- |
-# | `A` / `B` | Insert cell above / below |
-# | `M` / `Y` | Change cell to Markdown / Code |
 # | `Enter` | Edit cell |
 # | `Esc` | Exit cell |
+# | `A` / `B` | Insert cell above / below |
+# | `M` / `Y` | Change cell to Markdown / Code |
 # | `Shift+Enter` | Run cell and move to next |
 # | `Ctrl+Enter` | Run cell in place |
 #
@@ -204,7 +204,7 @@ print(bytes_to_human_readable(123456789, sum_inputs=False))
 
 # The cell below writes this intentionally broken script to `temp_bad_example.py`:
 #
-# <details><summary><code>bad_example.py</code></summary>
+# <details><summary><code>temp_bad_example.py</code></summary>
 #
 # ```python
 # """Syntactically valid Python script with many linting issues"""
@@ -289,6 +289,11 @@ c = a + b
 
 Path("temp_bad_example.py").write_text(BAD_CODE.lstrip("\n"))
 print("Written to temp_bad_example.py")
+# -
+
+# Try opening that file directly, and then look at the 'Problems' window.
+#
+# `Ctrl+Alt+P` -> `View: Focus Problems`
 
 # +
 import subprocess
@@ -369,7 +374,6 @@ print(remaining.stdout)
 #
 
 
-# Read carefully, then answer the questions above before refactoring below.
 class DataProcessor:
     """Processes experiment files for a given subject."""
 
@@ -436,6 +440,10 @@ class DataProcessor:
 #   dead code.
 #
 # </details>
+#
+# We tend to think `A -> B -> C -> D -> E`
+#
+# But code like the above turns that into `if D -> (C -> (A or B)) -> E`
 #
 # Now, let's try to refactor to make all Q's right next to their answer.
 
@@ -653,7 +661,7 @@ def get_data_interface(
 # > instructor.
 #
 
-# ### Debugging `f(n)` with `%debug`
+# ### Debugging with `%debug`
 #
 # `channel_stats_buggy.py` contains three bugs that raises an exception
 # deep in a 4-level call stack — the kind of crash where the error message
@@ -661,9 +669,11 @@ def get_data_interface(
 #
 # ```
 # summarize(channels)
-#   └─ _channel_stats(signal)     ← which channel failed?
-#        ├─ _std(values, mu)      ← Bug 1 crashes here
-#        └─ _z_scores(...)        ← Bug 2 crashes here
+#   └─ _channel_stats(signal)               ← which channel failed?
+#        ├─ _mean(values)                   ← Bug 1 crashes here
+#        ├─ _z_scores(signal, mu, sigma)    ← Bug 2 crashes here
+#        └─ _std(values, mu)
+#             └─ _variance(values, mu)      ← Bug 3 buried here
 # ```
 #
 # The cell below shows the traceback. First, we'll explore this traceback with
@@ -695,7 +705,7 @@ result = summarize(recording)
 #
 # **Alternative 1: IPython terminal with `%debug`**
 #
-# 1. Launch `ipython -i src/spyglass_workshop/channel_stats_buggy.py`, executing the `__main__` clause.
+# 1. Launch `ipython -i src/spyglass_workshop/channel_stats_buggy.py`, executing `__main__` clause.
 # 2. Inspect the error stack.
 # 3. Run `%debug`
 # 4. Navigate stack (`u`, `d`, `l`, etc.)

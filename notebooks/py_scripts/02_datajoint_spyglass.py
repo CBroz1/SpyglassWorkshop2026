@@ -671,7 +671,7 @@ st.MyAnalysis.summarize(first_key)
 #
 # **Imports** — run this cell first:
 
-import datajoint as dj
+import datajoint as dj  # type: ignore
 from spyglass.common import (
     Electrode,
     ElectrodeGroup,
@@ -843,7 +843,9 @@ print("Using:", nwb_file)
 #
 # </details>
 
-Nwbfile.file_like("mini")
+Nwbfile().file_like("mini")
+# equivalent to `Nwbfile() & "nwb_file_name LIKE '%mini%'"`
+# also works for analysis nwb files
 
 # +
 # Step 3: Pick one result key and resolve which Part table holds it.
@@ -920,42 +922,44 @@ import matplotlib.pyplot as plt
 
 # ### Exercise 5.3 — Declare a Computed table against live data *(~30 min)*
 #
-# In Section 4 you populated a pipeline that used mock subjects. Now you will
-# declare a `SessionSummary` table that queries real `IntervalList` data using
-# the `Interval` utility class — a set-algebra wrapper over Spyglass
-# valid-times arrays.
+# In Section 4 you populated a pipeline with mock subjects. Now declare an
+# `IntervalSummary` table that foreign-key references `IntervalList` — one row
+# per named interval list — and uses the `Interval` utility class.
 #
-# **Key `Interval` methods used here:**
+# `fetch_interval()` wraps a single `IntervalList` row's `valid_times` in an
+# `Interval` object, unlocking set-algebra methods without `np.concatenate`:
 #
 # | Method | What it does |
 # | :----- | :----------- |
-# | `Interval(array)` | Wrap an Nx2 numpy array of `[start, end]` pairs |
-# | `.consolidate()` | Merge any overlapping intervals |
-# | `.by_length(min_length)` | Keep only intervals at least that long |
+# | `(IntervalList & key).fetch_interval()` | Fetch one row as an `Interval` |
+# | `.consolidate()` | Merge any overlapping sub-intervals |
+# | `.by_length(min_length)` | Keep only sub-intervals ≥ that long |
 # | `a.intersect(b)` | Return time covered by **both** `a` and `b` |
 #
-# **Schema:** `Session` → `SessionSummary`
+# **Schema:** `IntervalList` → `IntervalSummary`
 #
 # | Field | Type | Description |
 # | :---- | :--- | :---------- |
-# | `n_intervals` | `int` | Total `IntervalList` entries for this session |
-# | `n_long_intervals` | `int` | Entries longer than 0.5 s (after consolidation) |
-# | `total_valid_s` | `float` | Total valid time across all intervals (seconds) |
+# | `n_sub_intervals` | `int` | Number of `[start, end]` pairs in `valid_times` |
+# | `n_long_sub_intervals` | `int` | Pairs ≥ 0.5 s after consolidation |
+# | `total_valid_s` | `float` | Total valid time (seconds) |
 #
 # **Steps:**
-# 1. Fill in `make` — use `Interval` to consolidate, filter, and sum durations.
-# 2. Run `SessionSummary.populate(display_progress=True)`.
-# 3. Inspect the results with `SessionSummary()`.
-# 4. *(Extension)* In a new cell, use `intersect()` to find the time covered
-#    by **both** the position valid-times and the raw recording epoch.
-#    Compare the durations of each component and the overlap.
+# 1. Fill in `make` — call `fetch_interval()`, then `consolidate()`,
+#    `by_length(min_length=0.5)`, and sum the durations via
+#    `np.sum(consolidated.times[:, 1] - consolidated.times[:, 0])`.
+# 2. Run `IntervalSummary.populate(display_progress=True)`.
+# 3. Inspect the results with `IntervalSummary()`.
+# 4. *(Extension)* In a new cell, fetch `"pos 0 valid times"` and `"01_s1"`
+#    for the same NWB file using `fetch_interval()`, then call `intersect()`
+#    to find their overlap and compare the three durations.
 
 # +
 import os
 
-import datajoint as dj
+import datajoint as dj  # type: ignore
 import numpy as np
-from spyglass.common import IntervalList, Session
+from spyglass.common import IntervalList
 from spyglass.common.common_interval import Interval
 from spyglass.utils import SpyglassMixin
 
@@ -963,50 +967,53 @@ schema = dj.schema(f"workshop_{os.getenv('USER', 'demo')}")
 
 
 @schema
-class SessionSummary(SpyglassMixin, dj.Computed):
-    """Per-session interval summary using the Interval utility class."""
+class IntervalSummary(SpyglassMixin, dj.Computed):
+    """Per-interval-list summary using the Interval utility class."""
 
     definition = """
-    -> Session
+    -> IntervalList
     ---
-    n_intervals       : int    # total IntervalList entries for this session
-    n_long_intervals  : int    # entries with duration > 0.5 s (after consolidation)
-    total_valid_s     : float  # total valid time across all intervals (seconds)
+    n_sub_intervals      : int    # number of [start, end] pairs in valid_times
+    n_long_sub_intervals : int    # pairs >= 0.5 s after consolidation
+    total_valid_s        : float  # total valid time (seconds)
     """
 
     def make(self, key):
         # YOUR CODE HERE
         # Steps:
-        # 1. Fetch:  all_vt = (IntervalList & key).fetch("valid_times")
-        # 2. Build:  all_valid = Interval(np.concatenate(all_vt)).consolidate()
-        # 3. Filter: long_valid = all_valid.by_length(min_length=0.5)
-        # 4. Sum:    total_s = sum(end - start for start, end in all_valid)
-        # 5. Insert: self.insert1({**key, "n_intervals": ..., ...})
+        # 1. Fetch:   interval = (IntervalList & key).fetch_interval()
+        # 2. Compute: consolidated = interval.consolidate()
+        # 3. Filter:  long_iv = consolidated.by_length(min_length=0.5)
+        # 4. Sum:     total_s = float(np.sum(
+        #                 consolidated.times[:, 1] - consolidated.times[:, 0]))
+        # 5. Insert:  self.insert1({**key, ...})
         pass
 
 
-# Preview: which sessions will be processed?
-print(f"Sessions to populate: {len(Session() - SessionSummary())}")
-SessionSummary.populate(display_progress=True)
+# Preview: how many rows will be populated?
+print(f"Rows to populate: {len(IntervalList() - IntervalSummary())}")
+IntervalSummary.populate(display_progress=True)
 # -
 
 # Inspect the results as a DataFrame
-SessionSummary().fetch(format="frame")
+IntervalSummary().fetch(format="frame")
 
 # <details><summary>Solution — make method</summary>
 #
 # ```python
 # def make(self, key):
-#     all_vt = (IntervalList & key).fetch("valid_times")
-#     all_valid = Interval(np.concatenate(all_vt)).consolidate()
-#     long_valid = all_valid.by_length(min_length=0.5)
-#     total_s = float(sum(end - start for start, end in all_valid))
+#     interval = (IntervalList & key).fetch_interval()
+#     consolidated = interval.consolidate()
+#     long_iv = consolidated.by_length(min_length=0.5)
+#     total_s = float(
+#         np.sum(consolidated.times[:, 1] - consolidated.times[:, 0])
+#     )
 #     self.insert1(
 #         {
 #             **key,
-#             "n_intervals": len(IntervalList & key),
-#             "n_long_intervals": len(long_valid),
-#             "total_valid_s": total_s,
+#             "n_sub_intervals": len(interval),
+#             "n_long_sub_intervals": len(long_iv),
+#             "total_valid_s": round(total_s, 4),
 #         }
 #     )
 # ```
@@ -1015,39 +1022,44 @@ SessionSummary().fetch(format="frame")
 #
 # <details><summary>Extension — intersect two interval lists</summary>
 #
-# Use `intersect()` to find the overlap between position valid-times and the
-# first session epoch. Run this in a new cell after `SessionSummary` is
-# populated.
+# Pick an NWB file and compare its position valid-times to the first epoch.
 #
 # ```python
 # import numpy as np
-# from spyglass.common import IntervalList, Session
+# from spyglass.common import IntervalList
 # from spyglass.common.common_interval import Interval
 #
-# key = Session.fetch1("KEY")
+# nwb = IntervalList.fetch("nwb_file_name", limit=1)[0]
 #
-# # All position valid-time intervals
-# pos_vt = np.concatenate(
-#     (IntervalList & key & 'interval_list_name LIKE "pos%"').fetch("valid_times")
-# )
-# # The raw recording epoch
-# epoch_vt = (
-#     IntervalList & key & {"interval_list_name": "01_s1"}
-# ).fetch1("valid_times")
+# pos_iv = (
+#     IntervalList
+#     & {"nwb_file_name": nwb, "interval_list_name": "pos 0 valid times"}
+# ).fetch_interval()
 #
-# pos = Interval(pos_vt)
-# epoch = Interval(epoch_vt)
-# overlap = pos.intersect(epoch)
+# epoch_iv = (
+#     IntervalList
+#     & {"nwb_file_name": nwb}
+#     & 'interval_list_name LIKE "01_%"'
+# ).fetch_interval()
 #
-# print(f"Position intervals : {len(pos):3d}  {sum(e-s for s,e in pos):.2f} s total")
-# print(f"Epoch interval     : {len(epoch):3d}  {sum(e-s for s,e in epoch):.2f} s total")
-# print(f"Overlap            : {len(overlap):3d}  {sum(e-s for s,e in overlap):.2f} s total")
+# overlap = pos_iv.intersect(epoch_iv)
+#
+#
+# def total_s(iv):
+#     return float(np.sum(iv.times[:, 1] - iv.times[:, 0]))
+#
+#
+# print(f"pos valid-times : {total_s(pos_iv):.2f} s")
+# print(f"01_* epoch      : {total_s(epoch_iv):.2f} s")
+# print(f"overlap         : {total_s(overlap):.2f} s")
 # ```
 #
 # </details>
+
 #
 # > **Going further:** see the full Spyglass tutorials at
 # > `spyglass/notebooks`:
 # >
 # > - start with **LFP** (notebook 30) and **Ripple Detection** (notebook 32)
-# > for two complete analysis pipelines
+# > for two complete analysis pipelines built on the same Parameter → Selection
+# > → Analysis pattern you used today.
