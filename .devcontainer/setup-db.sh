@@ -38,25 +38,31 @@ sudo service mysql restart
 mysql -u root -p"${ROOT_PASSWORD}" < "$INIT_SQL"
 
 # ---------------------------------------------------------------------------
-# 3. Set up Python environment and Jupyter kernel
+# 3. Set up conda environment and Jupyter kernel
 # ---------------------------------------------------------------------------
 
-VENV_DIR="$HOME/.venvs/spyglass"
+CONDA_DIR="/opt/conda"
 
-echo "Creating Python virtual environment at ${VENV_DIR} ..."
-python3.12 -m venv "$VENV_DIR"
+echo "Initializing conda for this shell ..."
+"${CONDA_DIR}/bin/conda" init bash
 
-echo "Installing workshop package and dependencies (this may take a few minutes) ..."
-"$VENV_DIR/bin/pip" install --quiet --upgrade pip
-"$VENV_DIR/bin/pip" install --quiet ipykernel -e "$REPO_ROOT"
+echo "Creating conda environment 'spyglass' (this may take several minutes) ..."
+# cd to the repo root so that `pip install -e .` in environment.yml resolves '.'
+cd "$REPO_ROOT"
+"${CONDA_DIR}/bin/mamba" env create \
+    --file "$REPO_ROOT/environment.yml" \
+    --name spyglass \
+    --quiet
+
+SPYGLASS_PYTHON="${CONDA_DIR}/envs/spyglass/bin/python"
 
 echo "Registering Jupyter kernel ..."
-"$VENV_DIR/bin/python" -m ipykernel install \
+"${SPYGLASS_PYTHON}" -m ipykernel install \
     --user \
     --name spyglass \
     --display-name "Spyglass Workshop"
 
-echo "Python environment ready at ${VENV_DIR}"
+echo "Conda environment ready.  Activate with:  conda activate spyglass"
 
 # ---------------------------------------------------------------------------
 # 4. Download workshop data archive

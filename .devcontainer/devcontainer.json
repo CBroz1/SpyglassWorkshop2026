@@ -27,7 +27,7 @@
         "ms-toolsai.jupyter"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/home/vscode/.venvs/spyglass/bin/python"
+        "python.defaultInterpreterPath": "/opt/conda/envs/spyglass/bin/python"
       }
     }
   },
