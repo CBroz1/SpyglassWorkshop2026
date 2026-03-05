@@ -44,6 +44,7 @@ ______________________________________________________________________
 
 If you haven't already done so...
 
+0. Connect to the guest wifi: `Visit-ED`, pass: `719-ed26`
 1. Open `https://github.com/CBroz1/SpyglassWorkshop2026`
 2. Click 'Fork' in the top right, accept defaults
 3. Copy the new URL

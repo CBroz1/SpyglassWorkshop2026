@@ -44,6 +44,7 @@ ______________________________________________________________________
 
 If you haven't already done so, please ...
 
+0. Connect to the guest wifi: `Visit-ED`, pass: `719-ed26`
 1. Install Spyglass
    1. `git clone https://github.com/LorenFrankLab/spyglass`
    2. `python spyglass/scripts/install.py --minimal` # Takes time
